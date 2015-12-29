@@ -8,15 +8,18 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::mem;
 use std::ops::{DerefMut,CoerceUnsized};
 use std::thread::LocalKey;
-use libc::{c_int, c_void};
+use libc::{c_int, c_void, c_char};
 use iup_sys::*;
-use super::Control;
+use super::{Control, MouseButton, KeyboardMouseStatus};
 
-enum CallbackAction {
+pub enum CallbackAction {
     Default,
-    Close,
+    // Close is not needed because it is just as easy to call IupExitLoop()
+    // and then the API is smaller.
+    // Close,
     Ignore,
     Continue,
 }
@@ -26,12 +29,28 @@ enum CallbackAction {
 
 // use LDESTROY_CB instead of DESTROY_CB
 
-struct Token {
+// TODO: if Token is public, then I need to make sure that converting from a MapCallbackToken to
+// a DestroyToken can't cause unsafety
+pub struct Token {
     id: usize,
     ih: *mut Ihandle,
 }
 
-struct CallbackRegistry<F: ?Sized, T: Into<Token> + From<Token>> {
+macro_rules! callback_token {
+    ($name:ident) => {
+        pub struct $name(Token);
+
+        impl From<$name> for Token {
+            fn from($name(t): $name) -> Token { t }
+        }
+
+        impl From<Token> for $name {
+            fn from(t: Token) -> $name { $name(t) }
+        }
+    };
+}
+
+pub struct CallbackRegistry<F: ?Sized, T: Into<Token> + From<Token>> {
     cb_name: &'static str,
     cb_fn: Icallback,
     callbacks: RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>,
@@ -83,7 +102,7 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     }
 }
 
-fn simple_callback<T>(ih: *mut Ihandle,
+pub fn simple_callback<T>(ih: *mut Ihandle,
                       reg: &'static LocalKey<CallbackRegistry<FnMut(), T>>)
                       -> c_int where T: Into<Token> + From<Token> {
     reg.with(|reg| {
@@ -96,32 +115,7 @@ fn simple_callback<T>(ih: *mut Ihandle,
     IUP_DEFAULT
 }
 
-
-
-// need to add a test that converting between LeaveWindowCallbackToken and Token either fails to
-// compile or cannot cause unsafety (maybe just leave Token private)
-pub struct LeaveWindowCallbackToken(Token);
-
-impl From<LeaveWindowCallbackToken> for Token {
-    fn from(LeaveWindowCallbackToken(t): LeaveWindowCallbackToken) -> Token { t }
-}
-
-impl From<Token> for LeaveWindowCallbackToken {
-    fn from(t: Token) -> LeaveWindowCallbackToken { LeaveWindowCallbackToken(t) }
-}
-
-thread_local!(
-    static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), LeaveWindowCallbackToken> =
-        CallbackRegistry::new("LEAVEWINDOW_CB", leave_window)
-);
-
-extern fn leave_window(ih: *mut Ihandle) -> c_int {
-    simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
-}
-
-
-
-struct Event<'a, F: ?Sized + 'static, T: 'static + Into<Token> + From<Token>> {
+pub struct Event<'a, F: ?Sized + 'static, T: 'static + Into<Token> + From<Token>> {
     control: &'a mut Control,
     reg: &'static LocalKey<CallbackRegistry<F, T>>,
 }
@@ -142,9 +136,92 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
     }
 }
 
-pub trait CommonCallbacks : Control {
+
+
+pub trait MenuCommonCallbacks : Control {
+    // fn map();
+    // fn unmap();
+    // fn destroy();
+}
+
+
+callback_token!(EnterWindowCallbackToken);
+thread_local!(
+    static ENTER_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), EnterWindowCallbackToken> =
+        CallbackRegistry::new("ENTERWINDOW_CB", enter_window)
+);
+extern fn enter_window(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
+}
+
+callback_token!(LeaveWindowCallbackToken);
+thread_local!(
+    static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), LeaveWindowCallbackToken> =
+        CallbackRegistry::new("LEAVEWINDOW_CB", leave_window)
+);
+extern fn leave_window(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
+}
+
+pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
+    // fn get_focus();
+    // fn kill_focus();
+
+    fn enter_window<'a>(&'a mut self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
+    where &'a mut Self: CoerceUnsized<&'a mut Control> {
+        Event::new(self as &mut Control, &ENTER_WINDOW_CALLBACKS)
+    }
+
     fn leave_window<'a>(&'a mut self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
     where &'a mut Self: CoerceUnsized<&'a mut Control> {
         Event::new(self as &mut Control, &LEAVE_WINDOW_CALLBACKS)
+    }
+
+    // fn k_any();
+}
+
+
+#[derive(Clone)]
+pub struct ButtonArgs {
+    pub button: MouseButton,
+    pub pressed: bool,
+    pub x: i32,
+    pub y: i32,
+    pub status: KeyboardMouseStatus,
+    _dummy: (),
+}
+
+callback_token!(ButtonCallbackToken);
+thread_local!(
+    static BUTTON_CALLBACKS: CallbackRegistry<FnMut(&ButtonArgs), ButtonCallbackToken> =
+        CallbackRegistry::new("BUTTON_CB",  unsafe { mem::transmute::<_, Icallback>(button) })
+);
+unsafe extern fn button(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_int, y: c_int, status: *mut c_char) -> c_int {
+    // Maybe the callback should be able to return Ignore (and thus this function return
+    // IUP_IGNORE). My main hesitation is that IUP's docs state that it is system
+    // dependent: "On some controls if IUP_IGNORE is returned the action is ignored (this is
+    // system dependent)." Plus, it doesn't seem really useful and is more verbose.
+    BUTTON_CALLBACKS.with(|reg| {
+        if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
+            let args = ButtonArgs {
+                button: MouseButton::from_int(button),
+                pressed: pressed != 0,
+                x: x as i32,
+                y: y as i32,
+                status: KeyboardMouseStatus::from_cstr(status),
+                _dummy: (),
+            };
+            for cb in cbs {
+                cb.1(&args);
+            }
+        }
+    });
+    IUP_DEFAULT
+}
+
+pub trait ButtonCallback {
+    fn button<'a>(&'a mut self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
+    where &'a mut Self: CoerceUnsized<&'a mut Control> {
+        Event::new(self as &mut Control, &BUTTON_CALLBACKS)
     }
 }

@@ -9,7 +9,7 @@ use std::ffi::CStr;
 use std::ptr;
 use libc::{c_int};
 use iup_sys::*;
-use super::{CommonAttributes,TitleAttribute,Control,CommonCallbacks};
+use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks};
 
 #[derive(Copy,Clone,PartialEq)]
 pub enum Position {
@@ -81,4 +81,5 @@ impl CommonAttributes for Dialog {}
 
 impl TitleAttribute for Dialog {}
 
-impl CommonCallbacks for Dialog {}
+impl MenuCommonCallbacks for Dialog {}
+impl NonMenuCommonCallbacks for Dialog {}

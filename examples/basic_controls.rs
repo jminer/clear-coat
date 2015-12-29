@@ -7,7 +7,7 @@
 
 extern crate clear_coat;
 
-use clear_coat::{Dialog, Position, TitleAttribute, CommonCallbacks};
+use clear_coat::{Dialog, Position, TitleAttribute, NonMenuCommonCallbacks};
 
 fn main() {
     let mut dialog = Dialog::new(None);

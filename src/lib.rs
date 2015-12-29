@@ -22,20 +22,21 @@ macro_rules! impl_control_traits {
             }
         }
 
-        impl Control for ::$control {
+        unsafe impl Control for ::$control {
             fn handle(&self) -> *const Ihandle { self.0 }
             fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
         }
     };
 }
 
+#[macro_use]
 mod common_callbacks;
 mod dialog;
 mod button;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
-pub use common_callbacks::CommonCallbacks;
+pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCallback};
 
 use std::borrow::Cow;
 use std::ffi::CStr;
@@ -78,9 +79,73 @@ fn iup_open() {
     unsafe { IupOpen(ptr::null_mut(), ptr::null_mut()); }
 }
 
-pub trait Control {
+// Part of the contract of implementing this trait is that no invalid handle
+// is returned. Either the handle will stay valid for the life of the object or
+// the method will panic.
+pub unsafe trait Control {
     fn handle(&self) -> *const Ihandle;
     fn handle_mut(&mut self) -> *mut Ihandle;
+}
+
+#[derive(Copy,Clone)]
+pub enum MouseButton {
+    Button1,
+    Button2,
+    Button3,
+    Button4,
+    Button5,
+}
+
+impl MouseButton {
+    fn from_int(i: c_int) -> MouseButton {
+        match i {
+            IUP_BUTTON1 => MouseButton::Button1,
+            IUP_BUTTON2 => MouseButton::Button2,
+            IUP_BUTTON3 => MouseButton::Button3,
+            IUP_BUTTON4 => MouseButton::Button4,
+            IUP_BUTTON5 => MouseButton::Button5,
+            _ => panic!("unknown mouse button"),
+        }
+    }
+
+    // fn to_int(self) -> c_int {
+    //     match self {
+    //         MouseButton::Button1 => IUP_BUTTON1,
+    //         MouseButton::Button2 => IUP_BUTTON2,
+    //         MouseButton::Button3 => IUP_BUTTON3,
+    //         MouseButton::Button4 => IUP_BUTTON4,
+    //         MouseButton::Button5 => IUP_BUTTON5,
+    //     }
+    // }
+}
+
+#[derive(Clone)]
+pub struct KeyboardMouseStatus {
+    shift_pressed: bool,
+    control_pressed: bool,
+    alt_pressed: bool,
+    sys_pressed: bool,
+    button1_pressed: bool,
+    button2_pressed: bool,
+    button3_pressed: bool,
+    button4_pressed: bool,
+    button5_pressed: bool,
+}
+
+impl KeyboardMouseStatus {
+    unsafe fn from_cstr(s: *const c_char) -> KeyboardMouseStatus {
+        KeyboardMouseStatus {
+            shift_pressed: iup_isshift(s),
+            control_pressed: iup_iscontrol(s),
+            alt_pressed: iup_isalt(s),
+            sys_pressed: iup_issys(s),
+            button1_pressed: iup_isbutton1(s),
+            button2_pressed: iup_isbutton2(s),
+            button3_pressed: iup_isbutton3(s),
+            button4_pressed: iup_isbutton4(s),
+            button5_pressed: iup_isbutton5(s),
+        }
+    }
 }
 
 pub trait CommonAttributes : Control {
