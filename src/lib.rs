@@ -46,6 +46,7 @@ use iup_sys::*;
 
 pub fn main_loop() {
     unsafe {
+        iup_open();
         IupMainLoop();
     }
 }
