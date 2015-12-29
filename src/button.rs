@@ -5,18 +5,23 @@
  * modified, or distributed except according to those terms.
  */
 
+use std::ptr;
 use iup_sys::*;
-use super::{CommonAttributes,TitleAttribute,Wrapper};
+use super::{CommonAttributes,TitleAttribute,Control};
 
 pub struct Button(*mut Ihandle);
 
 impl Button {
+    pub fn new() -> Button {
+        unsafe {
+            super::iup_open();
+            let handle = IupButton(ptr::null_mut(), ptr::null_mut());
+            Button(handle)
+        }
+    }
 }
 
-impl Wrapper for Button {
-    fn handle(&self) -> *const Ihandle { self.0 }
-    fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
-}
+impl_control_traits!(Button);
 
 impl CommonAttributes for Button {}
 

@@ -5,8 +5,29 @@
  * modified, or distributed except according to those terms.
  */
 
+#![feature(coerce_unsized)]
+
 extern crate libc;
 extern crate iup_sys;
+
+macro_rules! impl_control_traits {
+    ($control:ident) => {
+        impl Drop for ::$control {
+            fn drop(&mut self) {
+                unsafe {
+                    if IupGetParent(self.handle_mut()) == ptr::null_mut() {
+                        IupDestroy(self.handle_mut());
+                    }
+                }
+            }
+        }
+
+        impl Control for ::$control {
+            fn handle(&self) -> *const Ihandle { self.0 }
+            fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
+        }
+    };
+}
 
 mod common_callbacks;
 mod dialog;
@@ -14,6 +35,7 @@ mod button;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
+pub use common_callbacks::CommonCallbacks;
 
 use std::borrow::Cow;
 use std::ffi::CStr;
@@ -56,12 +78,12 @@ fn iup_open() {
     unsafe { IupOpen(ptr::null_mut(), ptr::null_mut()); }
 }
 
-pub trait Wrapper {
+pub trait Control {
     fn handle(&self) -> *const Ihandle;
     fn handle_mut(&mut self) -> *mut Ihandle;
 }
 
-pub trait CommonAttributes : Wrapper {
+pub trait CommonAttributes : Control {
     fn active(&self) -> bool {
         get_str_attribute(self.handle(), "ACTIVE") == "YES"
     }
@@ -106,7 +128,7 @@ pub trait CommonAttributes : Wrapper {
     }
 }
 
-pub trait TitleAttribute : Wrapper {
+pub trait TitleAttribute : Control {
     fn title(&self) -> String {
         get_str_attribute(self.handle(), "TITLE")
     }
@@ -117,3 +139,17 @@ pub trait TitleAttribute : Wrapper {
 }
 
 
+#[test]
+#[should_panic]
+fn test_destroyed_control() {
+    let dialog = Dialog::new();
+    let button = Button::new();
+    dialog.append(button);
+    button.set_title("Hello");
+}
+
+#[test]
+#[should_panic]
+fn test_destroyed_control_with_normalizer() {
+    panic!("TODO");
+}

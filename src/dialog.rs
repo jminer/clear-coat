@@ -9,7 +9,7 @@ use std::ffi::CStr;
 use std::ptr;
 use libc::{c_int};
 use iup_sys::*;
-use super::{CommonAttributes,TitleAttribute,Wrapper};
+use super::{CommonAttributes,TitleAttribute,Control,CommonCallbacks};
 
 #[derive(Copy,Clone,PartialEq)]
 pub enum Position {
@@ -50,10 +50,10 @@ pub struct Dialog(*mut Ihandle);
 
 impl Dialog {
     // TODO: must do something to kill this when the control is destroyed
-    pub fn new() -> Dialog {
+    pub fn new(child: Option<&mut Control>) -> Dialog {
         unsafe {
             super::iup_open();
-            let handle = IupDialog(ptr::null_mut());
+            let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle_mut()));
             Dialog(handle)
         }
     }
@@ -75,11 +75,10 @@ impl Dialog {
     }
 }
 
-impl Wrapper for Dialog {
-    fn handle(&self) -> *const Ihandle { self.0 }
-    fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
-}
+impl_control_traits!(Dialog);
 
 impl CommonAttributes for Dialog {}
 
 impl TitleAttribute for Dialog {}
+
+impl CommonCallbacks for Dialog {}
