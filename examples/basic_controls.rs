@@ -1,21 +1,18 @@
 /* Copyright 2015 Jordan Miner
  *
- * Licensed under the MIT license <LICENSE or
- * http://opensource.org/licenses/MIT>. This file may not be copied,
- * modified, or distributed except according to those terms.
+ * Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+ * http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+ * <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+ * option. This file may not be copied, modified, or distributed
+ * except according to those terms.
  */
 
 extern crate clear_coat;
 
-use clear_coat::{Dialog, Position, TitleAttribute, NonMenuCommonCallbacks};
+use std::ptr;
+use clear_coat::{Dialog, NonMenuCommonCallbacks};
 
 fn main() {
-    let mut dialog = Dialog::new(None);
-    dialog.show_xy(Position::Center, Position::Center)
-          .expect("There was a problem showing the window");
-    dialog.set_title("Howdy");
-    dialog.leave_window().add_callback(|| println!("left window 1"));
-    dialog.leave_window().add_callback(|| println!("left window 2"));
-    //dialog.leave_window().remove_callback(t);
-    clear_coat::main_loop();
+    let mut dialog = Dialog(ptr::null_mut());
+    dialog.leave_window().remove_callback();
 }
