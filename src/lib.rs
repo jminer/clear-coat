@@ -8,20 +8,4 @@
  */
 
 mod common_callbacks;
-pub use common_callbacks::{NonMenuCommonCallbacks};
-
-
-pub unsafe trait Control {
-    fn handle(&self) -> *const u32;
-    fn handle_mut(&mut self) -> *mut u32;
-}
-
-pub struct Dialog(pub *mut u32);
-
-unsafe impl Control for Dialog {
-    fn handle(&self) -> *const u32 { self.0 }
-    fn handle_mut(&mut self) -> *mut u32 { self.0 }
-}
-
-impl NonMenuCommonCallbacks for Dialog {}
-
+pub use common_callbacks::{LEAVE_WINDOW_CALLBACKS};

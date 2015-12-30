@@ -10,8 +10,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ptr;
-use std::thread::LocalKey;
-use super::{Control};
 
 pub type Icallback = extern fn(ih: *mut u32) -> i32;
 
@@ -32,26 +30,7 @@ impl<F: ?Sized> CallbackRegistry<F> {
     }
 }
 
-pub struct Event<F: ?Sized + 'static> {
-    pub reg: &'static LocalKey<CallbackRegistry<F>>,
-}
-
-impl<F: ?Sized> Event<F> {
-    pub fn remove_callback(&mut self) {
-        self.reg.with(|reg| reg.remove_callback())
-    }
-}
-
-
-
 thread_local!(
-    static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut()> =
+    pub static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut()> =
         CallbackRegistry { callbacks: RefCell::new(HashMap::new()), }
 );
-
-pub trait NonMenuCommonCallbacks : Control {
-    fn leave_window<'a>(&'a mut self) -> Event<FnMut()> {
-        Event { reg: &LEAVE_WINDOW_CALLBACKS }
-    }
-}
-

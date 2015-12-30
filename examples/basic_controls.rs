@@ -9,10 +9,8 @@
 
 extern crate clear_coat;
 
-use std::ptr;
-use clear_coat::{Dialog, NonMenuCommonCallbacks};
+use clear_coat::{LEAVE_WINDOW_CALLBACKS};
 
 fn main() {
-    let mut dialog = Dialog(ptr::null_mut());
-    dialog.leave_window().remove_callback();
+    LEAVE_WINDOW_CALLBACKS.with(|reg| reg.remove_callback());
 }
