@@ -36,7 +36,7 @@ mod button;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
-pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCallback};
+pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCallback, Event};
 
 use std::borrow::Cow;
 use std::ffi::CStr;
