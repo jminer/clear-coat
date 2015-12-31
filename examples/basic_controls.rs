@@ -15,6 +15,7 @@ fn main() {
     button1.set_title("Push Me");
     let button2 = Button::new();
     button2.set_title("Hi");
+    button1.action().add_callback(|| println!("you pushed it!"));
 
     let mut dialog = Dialog::new(Some(&vbox!(button1, button2)));
 

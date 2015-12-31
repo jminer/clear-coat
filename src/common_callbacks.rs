@@ -116,22 +116,22 @@ pub fn simple_callback<T>(ih: *mut Ihandle,
 }
 
 pub struct Event<'a, F: ?Sized + 'static, T: 'static + Into<Token> + From<Token>> {
-    control: &'a mut Control,
+    control: &'a Control,
     reg: &'static LocalKey<CallbackRegistry<F, T>>,
 }
 
 impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
-    pub fn new(control: &'a mut Control, reg: &'static LocalKey<CallbackRegistry<F, T>>) -> Event<'a, F, T> {
+    pub fn new(control: &'a Control, reg: &'static LocalKey<CallbackRegistry<F, T>>) -> Event<'a, F, T> {
         Event { control: control, reg: reg }
     }
 
-    pub fn add_callback<G>(&mut self, cb: G) -> T
+    pub fn add_callback<G>(&self, cb: G) -> T
     where Box<G>: CoerceUnsized<Box<F>>
     {
         self.reg.with(|reg| reg.add_callback_inner(self.control.handle(), Box::new(cb) as Box<F>))
     }
 
-    pub fn remove_callback(&mut self, token: T) {
+    pub fn remove_callback(&self, token: T) {
         self.reg.with(|reg| reg.remove_callback(self.control.handle(), token))
     }
 }
@@ -167,14 +167,14 @@ pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
     // fn get_focus();
     // fn kill_focus();
 
-    fn enter_window<'a>(&'a mut self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
-    where &'a mut Self: CoerceUnsized<&'a mut Control> {
-        Event::new(self as &mut Control, &ENTER_WINDOW_CALLBACKS)
+    fn enter_window<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &ENTER_WINDOW_CALLBACKS)
     }
 
-    fn leave_window<'a>(&'a mut self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
-    where &'a mut Self: CoerceUnsized<&'a mut Control> {
-        Event::new(self as &mut Control, &LEAVE_WINDOW_CALLBACKS)
+    fn leave_window<'a>(&'a self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &LEAVE_WINDOW_CALLBACKS)
     }
 
     // fn k_any();
@@ -220,8 +220,8 @@ unsafe extern fn button(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_in
 }
 
 pub trait ButtonCallback {
-    fn button<'a>(&'a mut self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
-    where &'a mut Self: CoerceUnsized<&'a mut Control> {
-        Event::new(self as &mut Control, &BUTTON_CALLBACKS)
+    fn button<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &BUTTON_CALLBACKS)
     }
 }

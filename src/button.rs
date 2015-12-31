@@ -30,9 +30,9 @@ impl Button {
         }
     }
 
-    fn action<'a>(&'a mut self) -> Event<'a, FnMut(), ButtonActionCallbackToken>
-    where &'a mut Self: CoerceUnsized<&'a mut Control> {
-        Event::new(self as &mut Control, &BUTTON_ACTION_CALLBACKS)
+    pub fn action<'a>(&'a self) -> Event<'a, FnMut(), ButtonActionCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &'a Control, &BUTTON_ACTION_CALLBACKS)
     }
 }
 
