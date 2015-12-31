@@ -71,11 +71,9 @@ impl Fill {
 
 impl_control_traits!(Fill);
 
-impl Container for Fill {}
-
 #[macro_export]
 macro_rules! fill { // This is a macro for consistency, even though it could just be a function.
-    () => { };
+    () => { Fill::new() };
 }
 
 
