@@ -41,9 +41,12 @@ mod common_callbacks;
 mod dialog;
 mod button;
 mod handle_rc;
+#[macro_use]
+mod hbox;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
+pub use hbox::{Hbox, Vbox};
 pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCallback, Event};
 
 use std::borrow::Cow;
@@ -233,7 +236,7 @@ pub trait CommonAttributes : Control {
         get_str_attribute(self.handle(), "ACTIVE") == "YES"
     }
 
-    fn set_active(&mut self, active: bool) {
+    fn set_active(&self, active: bool) {
         set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
     }
 
@@ -244,11 +247,11 @@ pub trait CommonAttributes : Control {
         get_str_attribute_slice(self.handle(), "TIP")
     }
 
-    fn set_tip(&mut self, tip: &str) {
+    fn set_tip(&self, tip: &str) {
         set_str_attribute(self.handle(), "TIP", tip);
     }
 
-    fn show(&mut self) -> Result<(), ()> {
+    fn show(&self) -> Result<(), ()> {
         unsafe {
             if IupShow(self.handle()) == IUP_NOERROR {
                 Ok(())
@@ -258,7 +261,7 @@ pub trait CommonAttributes : Control {
         }
     }
 
-    fn hide(&mut self) -> Result<(), ()> {
+    fn hide(&self) -> Result<(), ()> {
         unsafe {
             if IupHide(self.handle()) == IUP_NOERROR {
                 Ok(())
@@ -268,7 +271,7 @@ pub trait CommonAttributes : Control {
         }
     }
 
-    fn set_visible(&mut self, visible: bool) -> Result<(), ()> {
+    fn set_visible(&self, visible: bool) -> Result<(), ()> {
         if visible { self.show() } else { self.hide() }
     }
 }
@@ -278,7 +281,7 @@ pub trait TitleAttribute : Control {
         get_str_attribute(self.handle(), "TITLE")
     }
 
-    fn set_title(&mut self, title: &str) {
+    fn set_title(&self, title: &str) {
         set_str_attribute(self.handle(), "TITLE", title);
     }
 }

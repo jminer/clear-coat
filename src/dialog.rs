@@ -51,9 +51,9 @@ impl Position {
 pub struct Dialog(HandleRc);
 
 impl Dialog {
-    pub fn new(child: Option<&mut Control>) -> Dialog {
+    pub fn new(child: Option<&Control>) -> Dialog {
         unsafe {
-            super::iup_open();
+            ::iup_open();
             let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle()));
             Dialog(HandleRc::new(handle))
         }

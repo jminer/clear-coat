@@ -5,12 +5,19 @@
  * modified, or distributed except according to those terms.
  */
 
+#[macro_use]
 extern crate clear_coat;
 
-use clear_coat::{Dialog, Position, TitleAttribute, NonMenuCommonCallbacks};
+use clear_coat::*;
 
 fn main() {
-    let mut dialog = Dialog::new(None);
+    let button1 = Button::new();
+    button1.set_title("Push Me");
+    let button2 = Button::new();
+    button2.set_title("Hi");
+
+    let mut dialog = Dialog::new(Some(&vbox!(button1, button2)));
+
     dialog.show_xy(Position::Center, Position::Center)
           .expect("There was a problem showing the window");
     dialog.set_title("Howdy");
