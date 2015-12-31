@@ -18,7 +18,3 @@ impl Hbox {
     }
 }
 
-impl Wrapper for Hbox {
-    fn handle(&self) -> *const Ihandle { self.0 }
-    fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
-}

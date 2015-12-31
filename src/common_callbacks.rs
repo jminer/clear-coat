@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::mem;
-use std::ops::{DerefMut,CoerceUnsized};
+use std::ops::{CoerceUnsized};
 use std::thread::LocalKey;
 use libc::{c_int, c_void, c_char};
 use iup_sys::*;
@@ -128,11 +128,11 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
     pub fn add_callback<G>(&mut self, cb: G) -> T
     where Box<G>: CoerceUnsized<Box<F>>
     {
-        self.reg.with(|reg| reg.add_callback_inner(self.control.handle_mut(), Box::new(cb) as Box<F>))
+        self.reg.with(|reg| reg.add_callback_inner(self.control.handle(), Box::new(cb) as Box<F>))
     }
 
     pub fn remove_callback(&mut self, token: T) {
-        self.reg.with(|reg| reg.remove_callback(self.control.handle_mut(), token))
+        self.reg.with(|reg| reg.remove_callback(self.control.handle(), token))
     }
 }
 

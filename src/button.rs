@@ -9,17 +9,20 @@ use std::ptr;
 use std::ops::CoerceUnsized;
 use iup_sys::*;
 use libc::c_int;
-use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks, ButtonCallback};
+use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks, ButtonCallback, UnwrapHandle};
+use super::handle_rc::HandleRc;
 use super::common_callbacks::{Event, CallbackRegistry, simple_callback, Token};
 
-pub struct Button(*mut Ihandle);
+#[derive(Clone)]
+pub struct Button(HandleRc);
 
 impl Button {
     pub fn new() -> Button {
         unsafe {
-            super::iup_open();
+            ::iup_open();
             let handle = IupButton(ptr::null_mut(), ptr::null_mut());
-            Button(handle)
+            assert!(handle != ptr::null_mut());
+            Button(HandleRc::new(handle))
         }
     }
 

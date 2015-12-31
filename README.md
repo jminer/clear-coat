@@ -11,6 +11,8 @@ For the most part, the wrapper should be thin and use the same naming so that it
 - Support for notifying the event thread from another thread (IUP really should have this ability)
 - Support for registering multiple callbacks to one event (can be worked around, but is still useful)
 
+Of course, being written in Rust, Clear Coat provides a memory-safe interface. It should be impossible to use-after-free or get a segfault/access violation without using unsafe code. If you find a way, I'd love to hear about it so that I can fix it.
+
 ## License
 
 This library is licensed under the MIT license, the same as IUP is.

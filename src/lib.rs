@@ -9,22 +9,29 @@
 
 extern crate libc;
 extern crate iup_sys;
+extern crate kernel32;
+
+#[cfg(windows)]
+fn get_thread_id() -> isize {
+    use kernel32::GetCurrentThreadId;
+    unsafe { GetCurrentThreadId() as isize }
+}
 
 macro_rules! impl_control_traits {
     ($control:ident) => {
-        impl Drop for ::$control {
-            fn drop(&mut self) {
-                unsafe {
-                    if IupGetParent(self.handle_mut()) == ptr::null_mut() {
-                        IupDestroy(self.handle_mut());
-                    }
-                }
+        unsafe impl Control for ::$control {
+            fn handle(&self) -> *mut Ihandle {
+                assert!(self.0.get() != ptr::null_mut(), "attempted to use destroyed control");
+                ::check_thread();
+                self.0.get()
             }
         }
 
-        unsafe impl Control for ::$control {
-            fn handle(&self) -> *const Ihandle { self.0 }
-            fn handle_mut(&mut self) -> *mut Ihandle { self.0 }
+        unsafe impl UnwrapHandle for ::$control {
+            fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self> {
+                assert!(self.0.get() != ptr::null_mut(), "attempted to use destroyed control");
+                self.0.try_unwrap().map_err(|handle_rc| ::$control(handle_rc))
+            }
         }
     };
 }
@@ -33,6 +40,7 @@ macro_rules! impl_control_traits {
 mod common_callbacks;
 mod dialog;
 mod button;
+mod handle_rc;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
@@ -41,6 +49,7 @@ pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCa
 use std::borrow::Cow;
 use std::ffi::CStr;
 use std::ptr;
+use std::sync::atomic::{AtomicIsize, Ordering, ATOMIC_ISIZE_INIT};
 use libc::{c_char, c_int};
 use iup_sys::*;
 
@@ -77,15 +86,28 @@ unsafe fn get_str_attribute_slice(handle: *const Ihandle, name: &str) -> Cow<str
 }
 
 fn iup_open() {
+    check_thread();
     unsafe { IupOpen(ptr::null_mut(), ptr::null_mut()); }
+}
+
+static THREAD_ID: AtomicIsize = ATOMIC_ISIZE_INIT;
+
+fn check_thread() {
+    let thread_id = get_thread_id();
+    let prev = THREAD_ID.compare_and_swap(0, thread_id, Ordering::SeqCst);
+    assert!(prev == 0 || prev == thread_id, "IUP/Clear Coat functions must be called from a single thread");
 }
 
 // Part of the contract of implementing this trait is that no invalid handle
 // is returned. Either the handle will stay valid for the life of the object or
 // the method will panic.
 pub unsafe trait Control {
-    fn handle(&self) -> *const Ihandle;
-    fn handle_mut(&mut self) -> *mut Ihandle;
+    fn handle(&self) -> *mut Ihandle;
+}
+
+// If this wrapper has the only reference, it gives up shared ownership of the *mut Ihandle.
+pub unsafe trait UnwrapHandle : Sized {
+    fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self>;
 }
 
 #[derive(Copy,Clone)]
@@ -155,7 +177,7 @@ pub trait CommonAttributes : Control {
     }
 
     fn set_active(&mut self, active: bool) {
-        set_str_attribute(self.handle_mut(), "ACTIVE", if active { "YES" } else { "NO" });
+        set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
     }
 
     fn tip(&self) -> String {
@@ -166,12 +188,12 @@ pub trait CommonAttributes : Control {
     }
 
     fn set_tip(&mut self, tip: &str) {
-        set_str_attribute(self.handle_mut(), "TIP", tip);
+        set_str_attribute(self.handle(), "TIP", tip);
     }
 
     fn show(&mut self) -> Result<(), ()> {
         unsafe {
-            if IupShow(self.handle_mut()) == IUP_NOERROR {
+            if IupShow(self.handle()) == IUP_NOERROR {
                 Ok(())
             } else {
                 Err(())
@@ -181,7 +203,7 @@ pub trait CommonAttributes : Control {
 
     fn hide(&mut self) -> Result<(), ()> {
         unsafe {
-            if IupHide(self.handle_mut()) == IUP_NOERROR {
+            if IupHide(self.handle()) == IUP_NOERROR {
                 Ok(())
             } else {
                 Err(())
@@ -200,22 +222,6 @@ pub trait TitleAttribute : Control {
     }
 
     fn set_title(&mut self, title: &str) {
-        set_str_attribute(self.handle_mut(), "TITLE", title);
+        set_str_attribute(self.handle(), "TITLE", title);
     }
-}
-
-
-#[test]
-#[should_panic]
-fn test_destroyed_control() {
-    let dialog = Dialog::new();
-    let button = Button::new();
-    dialog.append(button);
-    button.set_title("Hello");
-}
-
-#[test]
-#[should_panic]
-fn test_destroyed_control_with_normalizer() {
-    panic!("TODO");
 }

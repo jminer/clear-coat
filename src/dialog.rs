@@ -9,7 +9,8 @@ use std::ffi::CStr;
 use std::ptr;
 use libc::{c_int};
 use iup_sys::*;
-use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks};
+use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks, UnwrapHandle};
+use super::handle_rc::{HandleRc};
 
 #[derive(Copy,Clone,PartialEq)]
 pub enum Position {
@@ -46,31 +47,37 @@ impl Position {
     }
 }
 
-pub struct Dialog(*mut Ihandle);
+#[derive(Clone)]
+pub struct Dialog(HandleRc);
 
 impl Dialog {
-    // TODO: must do something to kill this when the control is destroyed
     pub fn new(child: Option<&mut Control>) -> Dialog {
         unsafe {
             super::iup_open();
-            let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle_mut()));
-            Dialog(handle)
+            let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle()));
+            Dialog(HandleRc::new(handle))
         }
     }
 
     /*pub*/ unsafe fn from_handle(handle: *mut Ihandle) -> Dialog {
         // got to already be IupOpen()ed
         assert!(CStr::from_ptr(IupGetClassName(handle)).to_string_lossy() == "dialog");
-        Dialog(handle)
+        Dialog(HandleRc::new(handle))
     }
 
     pub fn show_xy(&mut self, x: Position, y: Position) -> Result<(), ()> {
         unsafe {
-            if IupShowXY(self.0, x.to_int(), y.to_int()) == IUP_NOERROR {
+            if IupShowXY(self.handle(), x.to_int(), y.to_int()) == IUP_NOERROR {
                 Ok(())
             } else {
                 Err(())
             }
+        }
+    }
+
+    pub fn append(&mut self, child: &Control) {
+        unsafe {
+            IupAppend(self.handle(), child.handle() as *mut Ihandle);
         }
     }
 }
