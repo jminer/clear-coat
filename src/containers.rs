@@ -102,7 +102,7 @@ impl Container for Hbox {}
 #[macro_export]
 macro_rules! hbox {
     ($($c:expr),*) => {
-        unsafe {
+        {
             use std::ptr;
             let mut handles = Vec::new();
             $(
@@ -112,7 +112,7 @@ macro_rules! hbox {
                 handles.push(c.handle());
             )*
             handles.push(ptr::null_mut());
-            Hbox::from_handles(handles.as_mut_ptr())
+            unsafe { Hbox::from_handles(handles.as_mut_ptr()) }
         }
     };
     ($($c:expr,)*) => { hbox!($($c),*) };
@@ -144,7 +144,7 @@ impl Container for Vbox {}
 #[macro_export]
 macro_rules! vbox {
     ($($c:expr),*) => {
-        unsafe {
+        {
             use std::ptr;
             let mut handles = Vec::new();
             $(
@@ -154,7 +154,7 @@ macro_rules! vbox {
                 handles.push(c.handle());
             )*
             handles.push(ptr::null_mut());
-            Vbox::from_handles(handles.as_mut_ptr())
+            unsafe { Vbox::from_handles(handles.as_mut_ptr()) }
         }
     };
     ($($c:expr,)*) => { vbox!($($c),*) };
