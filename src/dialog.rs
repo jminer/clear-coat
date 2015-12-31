@@ -9,7 +9,7 @@ use std::ffi::CStr;
 use std::ptr;
 use libc::{c_int};
 use iup_sys::*;
-use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks, UnwrapHandle};
+use super::{CommonAttributes, TitleAttribute, Control, Container, MenuCommonCallbacks, NonMenuCommonCallbacks, UnwrapHandle};
 use super::handle_rc::{HandleRc};
 
 #[derive(Copy,Clone,PartialEq)]
@@ -59,7 +59,7 @@ impl Dialog {
         }
     }
 
-    /*pub*/ unsafe fn from_handle(handle: *mut Ihandle) -> Dialog {
+    pub unsafe fn from_handle(handle: *mut Ihandle) -> Dialog {
         // got to already be IupOpen()ed
         assert!(CStr::from_ptr(IupGetClassName(handle)).to_string_lossy() == "dialog");
         Dialog(HandleRc::new(handle))
@@ -75,17 +75,18 @@ impl Dialog {
         }
     }
 
-    pub fn append(&mut self, child: &Control) {
+    pub fn refresh(&self) {
         unsafe {
-            IupAppend(self.handle(), child.handle() as *mut Ihandle);
+            IupRefresh(self.handle());
         }
     }
 }
 
 impl_control_traits!(Dialog);
 
-impl CommonAttributes for Dialog {}
+impl Container for Dialog {}
 
+impl CommonAttributes for Dialog {}
 impl TitleAttribute for Dialog {}
 
 impl MenuCommonCallbacks for Dialog {}

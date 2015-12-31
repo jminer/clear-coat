@@ -103,11 +103,68 @@ fn check_thread() {
 // the method will panic.
 pub unsafe trait Control {
     fn handle(&self) -> *mut Ihandle;
+
+    fn detach(&self) {
+        unsafe { IupDetach(self.handle()); }
+    }
+
+    fn reparent(&self, new_parent: &Container, ref_child: Option<&Control>) -> Result<(), ()> {
+        unsafe {
+            let ref_child = ref_child.map(|c| c.handle()).unwrap_or(ptr::null_mut());
+            if IupReparent(self.handle(), new_parent.handle(), ref_child) == IUP_NOERROR {
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
+    }
+
+    fn get_dialog(&self) -> Option<Dialog> {
+        unsafe {
+            let handle = IupGetDialog(self.handle());
+            if handle == ptr::null_mut() {
+                None
+            } else {
+                Some(Dialog::from_handle(handle))
+            }
+        }
+    }
 }
 
 // If this wrapper has the only reference, it gives up shared ownership of the *mut Ihandle.
 pub unsafe trait UnwrapHandle : Sized {
     fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self>;
+}
+
+pub trait Container : Control {
+    fn append(&self, new_child: &Control) -> Result<(), ()> {
+        unsafe {
+            if IupAppend(self.handle(), new_child.handle()) == ptr::null_mut() {
+                Err(())
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+    fn insert(&self, ref_child: Option<&Control>, new_child: &Control) -> Result<(), ()> {
+        unsafe {
+            let ref_child = ref_child.map(|c| c.handle()).unwrap_or(ptr::null_mut());
+            if IupInsert(self.handle(), ref_child, new_child.handle()) == ptr::null_mut() {
+                Err(())
+            } else {
+                Ok(())
+            }
+        }
+    }
+}
+
+pub trait NonDialogContainer : Container {
+    fn refresh_children(&self) {
+        unsafe {
+            IupRefreshChildren(self.handle());
+        }
+    }
 }
 
 #[derive(Copy,Clone)]
