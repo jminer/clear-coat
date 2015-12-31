@@ -22,7 +22,11 @@ impl Button {
             ::iup_open();
             let handle = IupButton(ptr::null_mut(), ptr::null_mut());
             assert!(handle != ptr::null_mut());
-            Button(HandleRc::new(handle))
+            let b = Button(HandleRc::new(handle));
+            if cfg!(windows) {
+                b.set_min_size(75, 0);
+            }
+            b
         }
     }
 
