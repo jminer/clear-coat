@@ -203,15 +203,16 @@ impl MouseButton {
         }
     }
 
-    // fn to_int(self) -> c_int {
-    //     match self {
-    //         MouseButton::Button1 => IUP_BUTTON1,
-    //         MouseButton::Button2 => IUP_BUTTON2,
-    //         MouseButton::Button3 => IUP_BUTTON3,
-    //         MouseButton::Button4 => IUP_BUTTON4,
-    //         MouseButton::Button5 => IUP_BUTTON5,
-    //     }
-    // }
+    #[allow(dead_code)]
+    fn to_int(self) -> c_int {
+        match self {
+            MouseButton::Button1 => IUP_BUTTON1,
+            MouseButton::Button2 => IUP_BUTTON2,
+            MouseButton::Button3 => IUP_BUTTON3,
+            MouseButton::Button4 => IUP_BUTTON4,
+            MouseButton::Button5 => IUP_BUTTON5,
+        }
+    }
 }
 
 #[derive(Clone)]

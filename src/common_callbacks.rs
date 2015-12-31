@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 use std::mem;
 use std::ops::{CoerceUnsized};
 use std::thread::LocalKey;
-use libc::{c_int, c_void, c_char};
+use libc::{c_int, c_char};
 use iup_sys::*;
 use super::{Control, MouseButton, KeyboardMouseStatus};
 

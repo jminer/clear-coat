@@ -23,17 +23,18 @@ pub enum Position {
 }
 
 impl Position {
-    //fn from_int(i: c_int) -> Position {
-    //    match i {
-    //        IUP_LEFT => Position::Left,
-    //        IUP_CENTER => Position::Center,
-    //        IUP_RIGHT => Position::Right,
-    //        IUP_MOUSEPOS => Position::MousePos,
-    //        IUP_CENTERPARENT => Position::CenterParent,
-    //        IUP_CURRENT => Position::Current,
-    //        _ => panic!("unknown position"),
-    //    }
-    //}
+    #[allow(dead_code)]
+    fn from_int(i: c_int) -> Position {
+       match i {
+           IUP_LEFT => Position::Left,
+           IUP_CENTER => Position::Center,
+           IUP_RIGHT => Position::Right,
+           IUP_MOUSEPOS => Position::MousePos,
+           IUP_CENTERPARENT => Position::CenterParent,
+           IUP_CURRENT => Position::Current,
+           _ => panic!("unknown position"),
+       }
+    }
 
     fn to_int(self) -> c_int {
         match self {

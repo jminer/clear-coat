@@ -26,7 +26,7 @@ impl Hbox {
     pub fn new(children: Option<&[&::Control]>) -> Hbox {
         unsafe {
             ::iup_open();
-            let (children, children_handles) = wrapper_to_handles(children);
+            let (_children, children_handles) = wrapper_to_handles(children);
             Hbox::from_handles(children_handles)
         }
     }
@@ -62,7 +62,7 @@ impl Vbox {
     pub fn new(children: Option<&[&::Control]>) -> Vbox {
         unsafe {
             ::iup_open();
-            let (children, children_handles) = wrapper_to_handles(children);
+            let (_children, children_handles) = wrapper_to_handles(children);
             Vbox::from_handles(children_handles)
         }
     }
