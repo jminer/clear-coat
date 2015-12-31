@@ -6,9 +6,41 @@
  */
 
 use std::ptr;
-use handle_rc::HandleRc;
-use super::{Control, Container, UnwrapHandle};
 use iup_sys::*;
+use super::{Control, UnwrapHandle};
+use super::handle_rc::HandleRc;
+
+pub trait Container : Control {
+    fn append(&self, new_child: &Control) -> Result<(), ()> {
+        unsafe {
+            if IupAppend(self.handle(), new_child.handle()) == ptr::null_mut() {
+                Err(())
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+    fn insert(&self, ref_child: Option<&Control>, new_child: &Control) -> Result<(), ()> {
+        unsafe {
+            let ref_child = ref_child.map(|c| c.handle()).unwrap_or(ptr::null_mut());
+            if IupInsert(self.handle(), ref_child, new_child.handle()) == ptr::null_mut() {
+                Err(())
+            } else {
+                Ok(())
+            }
+        }
+    }
+}
+
+pub trait NonDialogContainer : Container {
+    fn refresh_children(&self) {
+        unsafe {
+            IupRefreshChildren(self.handle());
+        }
+    }
+}
+
 
 // Be sure that the Vec is not dropped before the *mut *mut Ihandle is used.
 fn wrapper_to_handles(controls: Option<&[&::Control]>)
@@ -20,6 +52,30 @@ fn wrapper_to_handles(controls: Option<&[&::Control]>)
 }
 
 
+#[derive(Clone)]
+pub struct Fill(HandleRc);
+
+impl Fill {
+    pub fn new() -> Fill {
+        unsafe {
+            ::iup_open();
+            let handle = IupFill();
+            Fill(HandleRc::new(handle))
+        }
+    }
+}
+
+impl_control_traits!(Fill);
+
+impl Container for Fill {}
+
+#[macro_export]
+macro_rules! fill { // This is a macro for consistency, even though it could just be a function.
+    () => { };
+}
+
+
+#[derive(Clone)]
 pub struct Hbox(HandleRc);
 
 impl Hbox {
@@ -56,6 +112,7 @@ macro_rules! hbox {
 }
 
 
+#[derive(Clone)]
 pub struct Vbox(HandleRc);
 
 impl Vbox {

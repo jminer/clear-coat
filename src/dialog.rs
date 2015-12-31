@@ -9,8 +9,20 @@ use std::ffi::CStr;
 use std::ptr;
 use libc::{c_int};
 use iup_sys::*;
-use super::{CommonAttributes, TitleAttribute, Control, Container, MenuCommonCallbacks, NonMenuCommonCallbacks, UnwrapHandle};
-use super::handle_rc::{HandleRc};
+use super::{
+    Control,
+    UnwrapHandle,
+};
+use super::attributes::{
+    CommonAttributes,
+    TitleAttribute,
+};
+use super::callbacks::{
+    MenuCommonCallbacks,
+    NonMenuCommonCallbacks,
+};
+use super::containers::Container;
+use super::handle_rc::HandleRc;
 
 #[derive(Copy,Clone,PartialEq)]
 pub enum Position {

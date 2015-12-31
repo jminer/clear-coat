@@ -9,6 +9,7 @@
 extern crate clear_coat;
 
 use clear_coat::*;
+use clear_coat::common_attrs_cbs::*;
 
 fn main() {
     let button1 = Button::new();

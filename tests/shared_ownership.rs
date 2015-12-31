@@ -9,6 +9,7 @@ extern crate clear_coat;
 
 use std::ptr;
 use clear_coat::*;
+use clear_coat::common_attrs_cbs::*;
 
 #[test]
 fn test_shared_ownership() {

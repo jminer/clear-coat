@@ -9,9 +9,24 @@ use std::ptr;
 use std::ops::CoerceUnsized;
 use iup_sys::*;
 use libc::c_int;
-use super::{CommonAttributes, TitleAttribute, Control, MenuCommonCallbacks, NonMenuCommonCallbacks, ButtonCallback, UnwrapHandle};
+use super::{
+    Control,
+    UnwrapHandle,
+};
+use super::attributes::{
+    CommonAttributes,
+    TitleAttribute,
+};
+use super::callbacks::{
+    Event,
+    Token,
+    CallbackRegistry,
+    simple_callback,
+    MenuCommonCallbacks,
+    NonMenuCommonCallbacks,
+    ButtonCallback,
+};
 use super::handle_rc::HandleRc;
-use super::common_callbacks::{Event, CallbackRegistry, simple_callback, Token};
 
 #[derive(Clone)]
 pub struct Button(HandleRc);

@@ -37,20 +37,27 @@ macro_rules! impl_control_traits {
 }
 
 #[macro_use]
-mod common_callbacks;
-mod dialog;
-mod button;
-mod handle_rc;
+mod callbacks;
 #[macro_use]
-mod hbox;
+mod containers;
+
+mod attributes;
+mod button;
+mod dialog;
+mod handle_rc;
 
 pub use dialog::{Position, Dialog};
 pub use button::Button;
-pub use hbox::{Hbox, Vbox};
-pub use common_callbacks::{NonMenuCommonCallbacks, MenuCommonCallbacks, ButtonCallback, Event};
+pub use containers::{Container, Fill, Hbox, Vbox};
+pub use callbacks::{CallbackAction, Event};
 
-use std::borrow::Cow;
-use std::ffi::CStr;
+// With this layout, you can glob import this module's contents but selectively import the
+// above types if you want.
+pub mod common_attrs_cbs {
+    pub use attributes::{CommonAttributes, TitleAttribute};
+    pub use callbacks::{MenuCommonCallbacks, NonMenuCommonCallbacks, ButtonCallback};
+}
+
 use std::ptr;
 use std::sync::atomic::{AtomicIsize, Ordering, ATOMIC_ISIZE_INIT};
 use libc::{c_char, c_int};
@@ -63,42 +70,6 @@ pub fn main_loop() {
     }
 }
 
-
-fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
-    unsafe {
-        IupSetStrAttribute(handle,
-                           name.as_ptr() as *const c_char,
-                           value.as_ptr() as *const c_char);
-    }
-}
-
-// Unfortunately, the return value has to be copied because its lifetime isn't guarenteed.
-// IUP's docs state:
-//     "The returned pointer can be used safely even if IupGetGlobal or IupGetAttribute are called
-//     several times. But not too many times, because it is an internal buffer and after IUP may
-//     reuse it after around 50 calls."
-fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
-    unsafe {
-        get_str_attribute_slice(handle, name).into_owned()
-    }
-}
-
-unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
-    let value = IupGetAttribute(handle as *mut Ihandle, name.as_ptr() as *const c_char);
-    CStr::from_ptr(value).to_string_lossy()
-}
-
-fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
-    unsafe {
-        let mut x: i32 = 0;
-        let mut y: i32 = 0;
-        assert!(IupGetIntInt(handle as *mut Ihandle,
-                            name.as_ptr() as *const c_char,
-                            &mut x as *mut c_int,
-                            &mut y as *mut c_int) == 2);
-        (x, y)
-    }
-}
 
 fn iup_open() {
     check_thread();
@@ -149,37 +120,6 @@ pub unsafe trait Control {
 // If this wrapper has the only reference, it gives up shared ownership of the *mut Ihandle.
 pub unsafe trait UnwrapHandle : Sized {
     fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self>;
-}
-
-pub trait Container : Control {
-    fn append(&self, new_child: &Control) -> Result<(), ()> {
-        unsafe {
-            if IupAppend(self.handle(), new_child.handle()) == ptr::null_mut() {
-                Err(())
-            } else {
-                Ok(())
-            }
-        }
-    }
-
-    fn insert(&self, ref_child: Option<&Control>, new_child: &Control) -> Result<(), ()> {
-        unsafe {
-            let ref_child = ref_child.map(|c| c.handle()).unwrap_or(ptr::null_mut());
-            if IupInsert(self.handle(), ref_child, new_child.handle()) == ptr::null_mut() {
-                Err(())
-            } else {
-                Ok(())
-            }
-        }
-    }
-}
-
-pub trait NonDialogContainer : Container {
-    fn refresh_children(&self) {
-        unsafe {
-            IupRefreshChildren(self.handle());
-        }
-    }
 }
 
 #[derive(Copy,Clone)]
@@ -241,78 +181,5 @@ impl KeyboardMouseStatus {
             button4_pressed: iup_isbutton4(s),
             button5_pressed: iup_isbutton5(s),
         }
-    }
-}
-
-pub trait CommonAttributes : Control {
-    fn active(&self) -> bool {
-        get_str_attribute(self.handle(), "ACTIVE") == "YES"
-    }
-
-    fn set_active(&self, active: bool) {
-        set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
-    }
-
-    fn tip(&self) -> String {
-        get_str_attribute(self.handle(), "TIP")
-    }
-    unsafe fn tip_slice(&self) -> Cow<str> {
-        get_str_attribute_slice(self.handle(), "TIP")
-    }
-
-    fn set_tip(&self, tip: &str) {
-        set_str_attribute(self.handle(), "TIP", tip);
-    }
-
-    fn min_size(&self) -> (i32, i32) {
-        get_int_int_attribute(self.handle(), "MINSIZE")
-    }
-
-    fn set_min_size(&self, x: i32, y: i32) {
-        let s = format!("{}x{}", x, y);
-        set_str_attribute(self.handle(), "MINSIZE", &s);
-    }
-
-    fn max_size(&self) -> (i32, i32) {
-        get_int_int_attribute(self.handle(), "MAXSIZE")
-    }
-
-    fn set_max_size(&self, x: i32, y: i32) {
-        let s = format!("{}x{}", x, y);
-        set_str_attribute(self.handle(), "MAXSIZE", &s);
-    }
-
-    fn show(&self) -> Result<(), ()> {
-        unsafe {
-            if IupShow(self.handle()) == IUP_NOERROR {
-                Ok(())
-            } else {
-                Err(())
-            }
-        }
-    }
-
-    fn hide(&self) -> Result<(), ()> {
-        unsafe {
-            if IupHide(self.handle()) == IUP_NOERROR {
-                Ok(())
-            } else {
-                Err(())
-            }
-        }
-    }
-
-    fn set_visible(&self, visible: bool) -> Result<(), ()> {
-        if visible { self.show() } else { self.hide() }
-    }
-}
-
-pub trait TitleAttribute : Control {
-    fn title(&self) -> String {
-        get_str_attribute(self.handle(), "TITLE")
-    }
-
-    fn set_title(&self, title: &str) {
-        set_str_attribute(self.handle(), "TITLE", title);
     }
 }

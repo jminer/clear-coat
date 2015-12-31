@@ -10,6 +10,7 @@ extern crate iup_sys;
 
 use std::ptr;
 use clear_coat::*;
+use clear_coat::common_attrs_cbs::*;
 use iup_sys::*;
 
 #[test]
