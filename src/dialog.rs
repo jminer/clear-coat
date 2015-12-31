@@ -55,7 +55,9 @@ impl Dialog {
         unsafe {
             ::iup_open();
             let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle()));
-            Dialog(HandleRc::new(handle))
+            let d = Dialog(HandleRc::new(handle));
+            d.set_min_size(150, 0);
+            d
         }
     }
 
