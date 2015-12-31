@@ -17,8 +17,17 @@ fn main() {
     let button2 = Button::new();
     button2.set_title("Hi");
     button1.action().add_callback(|| println!("you pushed it!"));
+    let button3 = Button::new();
+    button3.set_title("Hi");
+    let button4 = Button::new();
+    button4.set_title("Hi");
 
-    let mut dialog = Dialog::new(Some(&vbox!(button1, button2)));
+    // TODO: there is handle::is_null()
+    // TODO: have setters return self, so that hbox and vbox, etc. can be configured without being stored in a variable?
+    let mut dialog = Dialog::new(Some(&vbox!(
+        button1, fill!(),
+        hbox!(fill!(), button3, button4),
+        button2)));
 
     dialog.show_xy(Position::Center, Position::Center)
           .expect("There was a problem showing the window");

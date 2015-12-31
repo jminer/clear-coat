@@ -46,7 +46,11 @@ pub trait NonDialogContainer : Container {
 fn wrapper_to_handles(controls: Option<&[&::Control]>)
 -> (Option<Vec<*mut Ihandle>>, *mut *mut Ihandle)
 {
-    let mut controls: Option<Vec<_>> = controls.map(|slice| slice.iter().map(|c| c.handle()).collect());
+    let mut controls: Option<Vec<_>> = controls.map(|slice| {
+        let mut v: Vec<*mut Ihandle> = slice.iter().map(|c| c.handle()).collect();
+        v.push(ptr::null_mut()); // array has to be null terminated
+        v
+    });
     let p = controls.as_mut().map(|v| v.as_mut_ptr()).unwrap_or(ptr::null_mut());
     (controls, p)
 }
@@ -101,10 +105,15 @@ impl Container for Hbox {}
 macro_rules! hbox {
     ($($c:expr),*) => {
         unsafe {
+            use std::ptr;
             let mut handles = Vec::new();
             $(
-                handles.push($c.handle());
+                // The control has to be stored in a binding to ensure it isn't dropped before
+                // it is added as a child of the container. (Otherwise, the control is destroyed.)
+                let c = $c;
+                handles.push(c.handle());
             )*
+            handles.push(ptr::null_mut());
             Hbox::from_handles(handles.as_mut_ptr())
         }
     };
@@ -138,10 +147,15 @@ impl Container for Vbox {}
 macro_rules! vbox {
     ($($c:expr),*) => {
         unsafe {
+            use std::ptr;
             let mut handles = Vec::new();
             $(
-                handles.push($c.handle());
+                // The control has to be stored in a binding to ensure it isn't dropped before
+                // it is added as a child of the container. (Otherwise, the control is destroyed.)
+                let c = $c;
+                handles.push(c.handle());
             )*
+            handles.push(ptr::null_mut());
             Vbox::from_handles(handles.as_mut_ptr())
         }
     };

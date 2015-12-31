@@ -70,6 +70,7 @@ impl Drop for HandleBox {
         unsafe {
             if IupGetParent(self.get()) == ptr::null_mut()
             {
+                //println!("deleting control with no parent: {:?}", self.get());
                 IupDestroy(self.get());
             }
         }
