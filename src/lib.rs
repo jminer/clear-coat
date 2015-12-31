@@ -77,15 +77,27 @@ fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
 //     "The returned pointer can be used safely even if IupGetGlobal or IupGetAttribute are called
 //     several times. But not too many times, because it is an internal buffer and after IUP may
 //     reuse it after around 50 calls."
-fn get_str_attribute(handle: *const Ihandle, name: &str) -> String {
+fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
     unsafe {
         get_str_attribute_slice(handle, name).into_owned()
     }
 }
 
-unsafe fn get_str_attribute_slice(handle: *const Ihandle, name: &str) -> Cow<str> {
+unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
     let value = IupGetAttribute(handle as *mut Ihandle, name.as_ptr() as *const c_char);
     CStr::from_ptr(value).to_string_lossy()
+}
+
+fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
+    unsafe {
+        let mut x: i32 = 0;
+        let mut y: i32 = 0;
+        assert!(IupGetIntInt(handle as *mut Ihandle,
+                            name.as_ptr() as *const c_char,
+                            &mut x as *mut c_int,
+                            &mut y as *mut c_int) == 2);
+        (x, y)
+    }
 }
 
 fn iup_open() {
@@ -249,6 +261,24 @@ pub trait CommonAttributes : Control {
 
     fn set_tip(&self, tip: &str) {
         set_str_attribute(self.handle(), "TIP", tip);
+    }
+
+    fn min_size(&self) -> (i32, i32) {
+        get_int_int_attribute(self.handle(), "MINSIZE")
+    }
+
+    fn set_min_size(&self, x: i32, y: i32) {
+        let s = format!("{}x{}", x, y);
+        set_str_attribute(self.handle(), "MINSIZE", &s);
+    }
+
+    fn max_size(&self) -> (i32, i32) {
+        get_int_int_attribute(self.handle(), "MAXSIZE")
+    }
+
+    fn set_max_size(&self, x: i32, y: i32) {
+        let s = format!("{}x{}", x, y);
+        set_str_attribute(self.handle(), "MAXSIZE", &s);
     }
 
     fn show(&self) -> Result<(), ()> {
