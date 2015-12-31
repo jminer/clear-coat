@@ -2,6 +2,10 @@
 name = "clear-coat"
 version = "0.1.0"
 authors = ["Jordan Miner <jminer7@gmail.com>"]
+description = "Clear Coat is a Rust wrapper for the IUP GUI library."
+repository = "https://github.com/jminer/clear-coat"
+license = "MIT"
+readme = "README.md"
 
 [dependencies]
 iup-sys = "0.0.3"
