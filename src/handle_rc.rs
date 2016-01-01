@@ -47,12 +47,19 @@ pub fn handle_rc_destroy_cb(ih: *mut Ihandle) {
         // Detach any child that still has a reference from a wrapper so that it doesn't
         // get destroyed.
         unsafe {
-            let count = IupGetChildCount(ih);
-            for i in 0..count {
-                let child = IupGetChild(ih, i);
+            // Removing a child shifts the index of the following children by one as you'd expect.
+            // The easiest way would be to iterate backward removing children. However,
+            // IUP stores children as a singly-linked list starting with the first child.
+            // So iterating reverse would be O(n^2) best case. Iterating forward would be O(n)
+            // best case and O(n^2) worst case. However, using IupGetNextChild and IupGetBrother
+            // is always O(n).
+            let mut child = IupGetNextChild(ih, ptr::null_mut());
+            while !child.is_null() {
+                let brother = IupGetBrother(child);
                 if map.contains_key(&child) {
                     IupDetach(child);
                 }
+                child = brother;
             }
         }
     });

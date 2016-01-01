@@ -11,3 +11,7 @@ IupOpen() needs called before any other IUP functions. To accomplish this, the w
 ## Tests
 
 Cargo will run tests in multiple threads, even if you run `cargo test -j 1`. Passing `-j 1` only makes it wait until one test finishes before starting the next, but it will still use a different thread for the next test. Such behavior is not acceptable for testing UI libraries. I found that if you use separate files in tests/, it will compile each file into a separate executable, and thus they will be run in separate processes (of course, `cargo test` runs them).
+
+## IUP Behavior
+
+IUP stores children as a singly-linked list starting with the first child. Iterating over them using `IupGetNextChild` and `IupGetBrother` is by far the fastest way (always O(n)). It is best to not use `IupGetChild`, as it is O(n), even though the docs don't mention it.
