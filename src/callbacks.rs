@@ -10,10 +10,12 @@ use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{CoerceUnsized};
+use std::rc::Rc;
 use std::thread::LocalKey;
 use libc::{c_int, c_char};
 use iup_sys::*;
 use super::{Control, MouseButton, KeyboardMouseStatus};
+use super::handle_rc::add_destroy_callback;
 
 pub enum CallbackAction {
     Default,
@@ -50,10 +52,10 @@ macro_rules! callback_token {
     };
 }
 
-pub struct CallbackRegistry<F: ?Sized, T: Into<Token> + From<Token>> {
+pub struct CallbackRegistry<F: ?Sized + 'static, T: Into<Token> + From<Token>> {
     cb_name: &'static str,
     cb_fn: Icallback,
-    callbacks: RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>,
+    callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
     phantom: PhantomData<*const T>,
 }
 
@@ -61,12 +63,16 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     // Icallback is the most common type of callback, but there are many exceptions. If the
     // callback's signature does not match Icallback, just cast to Icallback.
     pub fn new(cb_name: &'static str, cb_fn: Icallback) -> CallbackRegistry<F, T> {
-        CallbackRegistry {
+        let reg = CallbackRegistry {
             cb_name: cb_name,
             cb_fn: cb_fn,
-            callbacks: RefCell::new(HashMap::new()),
+            callbacks: Rc::new(RefCell::new(HashMap::new())),
             phantom: PhantomData,
-        }
+        };
+        // When a control is destroyed, we need to remove all of its callbacks.
+        let callbacks = reg.callbacks.clone();
+        add_destroy_callback(move |ih| { callbacks.borrow_mut().remove(&ih); });
+        reg
     }
 
     fn add_callback_inner(&self, ih: *mut Ihandle, cb: Box<F>) -> T {

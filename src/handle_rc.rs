@@ -14,12 +14,27 @@ use libc::c_int;
 use iup_sys::*;
 
 thread_local!(
+    static DESTROY_CALLBACKS: RefCell<Vec<Box<FnMut(*mut Ihandle)>>> = RefCell::new(Vec::new())
+);
+
+fn add_destroy_callback_inner(f: Box<FnMut(*mut Ihandle)>) {
+    DESTROY_CALLBACKS.with(|cbs|
+        cbs.borrow_mut().push(f)
+    );
+}
+
+pub fn add_destroy_callback<F: 'static + FnMut(*mut Ihandle)>(f: F) {
+    add_destroy_callback_inner(Box::new(f));
+}
+
+thread_local!(
     static EXISTING_HANDLES: RefCell<HashMap<*mut Ihandle, Weak<HandleBox>>> = RefCell::new(HashMap::new())
 );
 
-pub fn ihandle_destroyed(ih: *mut Ihandle) {
-    EXISTING_HANDLES.with(|map|
-        if let Some(weak) = map.borrow_mut().remove(&ih) {
+pub fn handle_rc_destroy_cb(ih: *mut Ihandle) {
+    EXISTING_HANDLES.with(|cell| {
+        let mut map = cell.borrow_mut();
+        if let Some(weak) = map.remove(&ih) {
             // It should be removed when the last strong ref was dropped, so it should always be upgradable.
             let handle = weak.upgrade().expect("could not upgrade Weak in handle map");
             // Since the control is destroyed, zero out to prevent wrapper structs from
@@ -27,20 +42,27 @@ pub fn ihandle_destroyed(ih: *mut Ihandle) {
             handle.set(ptr::null_mut());
         }
         // else: No wrapper handles currently exist. Don't need to do anything.
-    );
-}
 
-extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
-    ihandle_destroyed(ih);
-    EXISTING_HANDLES.with(|map| {
+
+        // Detach any child that still has a reference from a wrapper so that it doesn't
+        // get destroyed.
         unsafe {
             let count = IupGetChildCount(ih);
             for i in 0..count {
                 let child = IupGetChild(ih, i);
-                if map.borrow().contains_key(&child) {
+                if map.contains_key(&child) {
                     IupDetach(child);
                 }
             }
+        }
+    });
+}
+
+extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
+    handle_rc_destroy_cb(ih);
+    DESTROY_CALLBACKS.with(|cbs| {
+        for cb in cbs.borrow_mut().iter_mut() {
+            cb(ih);
         }
     });
     IUP_DEFAULT
