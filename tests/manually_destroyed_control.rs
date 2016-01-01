@@ -16,7 +16,7 @@ use iup_sys::*;
 #[test]
 #[should_panic(expected="attempted to use destroyed control")]
 fn test_manually_destroyed_control() {
-    let mut button = Button::new();
+    let button = Button::new();
     assert!(button.handle() != ptr::null_mut());
     unsafe { IupDestroy(button.handle()); }
     button.set_title("Hello"); // should panic since control is destroyed (pointer should be zeroed)

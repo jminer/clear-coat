@@ -13,12 +13,11 @@ use clear_coat::common_attrs_cbs::*;
 
 #[test]
 fn test_shared_ownership() {
-    let mut button = Button::new();
+    let button = Button::new();
     {
-        let mut dialog = Dialog::new(None);
-        dialog.append(&button as &Control);
+        let dialog = Dialog::new(None);
+        dialog.append(&button as &Control).unwrap();
     }
-    // if the next line panics, it is in handle(), not the assert!()
-    assert!(button.handle() != ptr::null_mut());
+    button.handle();
     button.set_title("Hello");
 }

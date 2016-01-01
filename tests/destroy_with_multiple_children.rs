@@ -8,7 +8,6 @@
 #[macro_use]
 extern crate clear_coat;
 
-use std::ptr;
 use std::rc::Rc;
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
