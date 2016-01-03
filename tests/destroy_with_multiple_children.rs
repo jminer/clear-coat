@@ -27,7 +27,7 @@ fn test_destroy_with_multiple_children() {
     button_z.action().add_callback(move || println!("{}", *z2));
     let button_w = Button::new();
     button_w.action().add_callback(move || println!("{}", *w2));
-    let dialog = Dialog::new(Some(&vbox!(&button_x, &button_y, &button_z, &button_w)));
+    let dialog = Dialog::with_child(&vbox!(&button_x, &button_y, &button_z, &button_w));
     drop(button_y);
     let (x, y, z, w) = (Rc::try_unwrap(x).unwrap_err(), Rc::try_unwrap(y).unwrap_err(),
                         Rc::try_unwrap(z).unwrap_err(), Rc::try_unwrap(w).unwrap_err());

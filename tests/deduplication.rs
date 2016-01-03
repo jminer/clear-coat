@@ -7,7 +7,6 @@
 
 extern crate clear_coat;
 
-use std::ptr;
 use std::rc::Rc;
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
@@ -19,7 +18,7 @@ use clear_coat::common_attrs_cbs::*;
 fn test_deduplication() {
     let x = Rc::new(5);
     let x2 = x.clone();
-    let dialog = Dialog::new(None);
+    let dialog = Dialog::new();
     dialog.enter_window().add_callback(move || println!("{}", *x2));
     let handle = dialog.handle();
     let dialog2 = unsafe { Dialog::from_handle(handle) };

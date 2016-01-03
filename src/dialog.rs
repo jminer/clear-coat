@@ -64,11 +64,21 @@ impl Position {
 pub struct Dialog(HandleRc);
 
 impl Dialog {
-    pub fn new(child: Option<&Control>) -> Dialog {
+    pub fn new() -> Dialog {
         unsafe {
             ::iup_open();
-            let handle = IupDialog(child.map_or(ptr::null_mut(), |c| c.handle()));
-            let d = Dialog(HandleRc::new(handle));
+            let ih = IupDialog(ptr::null_mut());
+            let d = Dialog(HandleRc::new(ih));
+            d.set_min_size(150, 0);
+            d
+        }
+    }
+
+    pub fn with_child(child: &Control) -> Dialog {
+        unsafe {
+            ::iup_open();
+            let ih = IupDialog(child.handle());
+            let d = Dialog(HandleRc::new(ih));
             d.set_min_size(150, 0);
             d
         }
@@ -80,7 +90,7 @@ impl Dialog {
         Dialog(HandleRc::new(handle))
     }
 
-    pub fn show_xy(&mut self, x: Position, y: Position) -> Result<(), ()> {
+    pub fn show_xy(&self, x: Position, y: Position) -> Result<(), ()> {
         unsafe {
             if IupShowXY(self.handle(), x.to_int(), y.to_int()) == IUP_NOERROR {
                 Ok(())

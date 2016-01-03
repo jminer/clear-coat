@@ -8,7 +8,7 @@
 use std::ptr;
 use std::ops::CoerceUnsized;
 use iup_sys::*;
-use libc::c_int;
+use libc::{c_char, c_int};
 use super::{
     Control,
     UnwrapHandle,
@@ -35,9 +35,20 @@ impl Button {
     pub fn new() -> Button {
         unsafe {
             ::iup_open();
-            let handle = IupButton(ptr::null_mut(), ptr::null_mut());
-            assert!(handle != ptr::null_mut());
-            let b = Button(HandleRc::new(handle));
+            let ih = IupButton(ptr::null_mut(), ptr::null_mut());
+            let b = Button(HandleRc::new(ih));
+            if cfg!(windows) {
+                b.set_min_size(75, 0);
+            }
+            b
+        }
+    }
+
+    pub fn with_title(title: &str) -> Button {
+        unsafe {
+            ::iup_open();
+            let ih = IupButton(title.as_ptr() as *const c_char, ptr::null_mut());
+            let b = Button(HandleRc::new(ih));
             if cfg!(windows) {
                 b.set_min_size(75, 0);
             }

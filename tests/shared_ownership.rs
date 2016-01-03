@@ -7,7 +7,6 @@
 
 extern crate clear_coat;
 
-use std::ptr;
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
 
@@ -15,7 +14,7 @@ use clear_coat::common_attrs_cbs::*;
 fn test_shared_ownership() {
     let button = Button::new();
     {
-        let dialog = Dialog::new(None);
+        let dialog = Dialog::new();
         dialog.append(&button as &Control).unwrap();
     }
     button.handle();

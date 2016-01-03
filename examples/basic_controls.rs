@@ -24,10 +24,10 @@ fn main() {
 
     // TODO: there is handle::is_null()
     // TODO: have setters return self, so that hbox and vbox, etc. can be configured without being stored in a variable?
-    let mut dialog = Dialog::new(Some(&vbox!(
+    let dialog = Dialog::with_child(&vbox!(
         button1, fill!(),
         hbox!(fill!(), button3, button4),
-        button2)));
+        button2));
 
     dialog.show_xy(Position::Center, Position::Center)
           .expect("There was a problem showing the window");
