@@ -7,11 +7,12 @@
 
 use std::ffi::CStr;
 use std::ptr;
-use libc::{c_int};
 use iup_sys::*;
 use super::{
     Control,
     UnwrapHandle,
+    ScreenPosition,
+    Popup,
 };
 use super::attributes::{
     CommonAttributes,
@@ -23,42 +24,6 @@ use super::callbacks::{
 };
 use super::containers::Container;
 use super::handle_rc::HandleRc;
-
-#[derive(Copy,Clone,PartialEq)]
-pub enum Position {
-    Left,
-    Center,
-    Right,
-    MousePos,
-    CenterParent,
-    Current,
-}
-
-impl Position {
-    #[allow(dead_code)]
-    fn from_int(i: c_int) -> Position {
-       match i {
-           IUP_LEFT => Position::Left,
-           IUP_CENTER => Position::Center,
-           IUP_RIGHT => Position::Right,
-           IUP_MOUSEPOS => Position::MousePos,
-           IUP_CENTERPARENT => Position::CenterParent,
-           IUP_CURRENT => Position::Current,
-           _ => panic!("unknown position"),
-       }
-    }
-
-    fn to_int(self) -> c_int {
-        match self {
-            Position::Left => IUP_LEFT,
-            Position::Center => IUP_CENTER,
-            Position::Right => IUP_RIGHT,
-            Position::MousePos => IUP_MOUSEPOS,
-            Position::CenterParent => IUP_CENTERPARENT,
-            Position::Current => IUP_CURRENT,
-        }
-    }
-}
 
 #[derive(Clone)]
 pub struct Dialog(HandleRc);
@@ -90,7 +55,7 @@ impl Dialog {
         Dialog(HandleRc::new(handle))
     }
 
-    pub fn show_xy(&self, x: Position, y: Position) -> Result<(), ()> {
+    pub fn show_xy(&self, x: ScreenPosition, y: ScreenPosition) -> Result<(), ()> {
         unsafe {
             if IupShowXY(self.handle(), x.to_int(), y.to_int()) == IUP_NOERROR {
                 Ok(())
@@ -110,6 +75,7 @@ impl Dialog {
 impl_control_traits!(Dialog);
 
 impl Container for Dialog {}
+impl Popup for Dialog {}
 
 impl CommonAttributes for Dialog {}
 impl TitleAttribute for Dialog {}

@@ -46,7 +46,7 @@ mod button;
 mod dialog;
 mod handle_rc;
 
-pub use dialog::{Position, Dialog};
+pub use dialog::{Dialog};
 pub use button::Button;
 pub use containers::{Container, Fill, Hbox, Vbox};
 pub use callbacks::{CallbackAction, Event};
@@ -120,6 +120,70 @@ pub unsafe trait Control {
 // If this wrapper has the only reference, it gives up shared ownership of the *mut Ihandle.
 pub unsafe trait UnwrapHandle : Sized {
     fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self>;
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ScreenPosition { // This is the name IUP uses: SCREENPOSITION attribute
+    Absolute(i32),
+    Left,
+    Right,
+    Top,
+    Bottom,
+    Center,
+    MousePos,
+    CenterParent,
+    Current,
+}
+
+impl ScreenPosition {
+    #[allow(dead_code)]
+    fn from_int_x(i: c_int) -> ScreenPosition {
+       match i {
+           IUP_LEFT => ScreenPosition::Left,
+           IUP_RIGHT => ScreenPosition::Right,
+           IUP_CENTER => ScreenPosition::Center,
+           IUP_MOUSEPOS => ScreenPosition::MousePos,
+           IUP_CENTERPARENT => ScreenPosition::CenterParent,
+           IUP_CURRENT => ScreenPosition::Current,
+           _ => ScreenPosition::Absolute(i),
+       }
+    }
+
+    #[allow(dead_code)]
+    fn from_int_y(i: c_int) -> ScreenPosition {
+       match i {
+           IUP_TOP => ScreenPosition::Top,
+           IUP_BOTTOM => ScreenPosition::Bottom,
+           _ => Self::from_int_x(i),
+       }
+    }
+
+    fn to_int(self) -> c_int {
+        match self {
+            ScreenPosition::Absolute(i) => i,
+            ScreenPosition::Left => IUP_LEFT,
+            ScreenPosition::Right => IUP_RIGHT,
+            ScreenPosition::Top => IUP_TOP,
+            ScreenPosition::Bottom => IUP_BOTTOM,
+            ScreenPosition::Center => IUP_CENTER,
+            ScreenPosition::MousePos => IUP_MOUSEPOS,
+            ScreenPosition::CenterParent => IUP_CENTERPARENT,
+            ScreenPosition::Current => IUP_CURRENT,
+        }
+    }
+}
+
+pub trait Popup : Control {
+    fn popup(&self, x: ScreenPosition, y: ScreenPosition) -> Result<(), ()> {
+        unsafe {
+            if IupPopup(self.handle(), x.to_int(), y.to_int()) == IUP_NOERROR {
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
+    }
 }
 
 #[derive(Copy,Clone)]

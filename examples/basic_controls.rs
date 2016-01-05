@@ -29,7 +29,7 @@ fn main() {
         hbox!(fill!(), button3, button4),
         button2));
 
-    dialog.show_xy(Position::Center, Position::Center)
+    dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center)
           .expect("There was a problem showing the window");
     dialog.set_title("Howdy");
     let t = dialog.leave_window().add_callback(|| println!("left window 1"));
