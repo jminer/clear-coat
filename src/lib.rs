@@ -73,7 +73,11 @@ pub fn main_loop() {
 
 fn iup_open() {
     check_thread();
-    unsafe { IupOpen(ptr::null_mut(), ptr::null_mut()); }
+    unsafe {
+        IupOpen(ptr::null_mut(), ptr::null_mut());
+        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE", "YES");
+        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE_FILE", "YES");
+    }
 }
 
 static THREAD_ID: AtomicIsize = ATOMIC_ISIZE_INIT;
