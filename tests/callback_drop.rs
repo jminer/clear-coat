@@ -17,7 +17,7 @@ fn test_callback_drop() {
     let x = Rc::new(0);
     let x2 = x.clone();
     let button = Button::new();
-    button.action().add_callback(move || println!("{}", *x2));
+    button.action_event().add(move || println!("{}", *x2));
     let x = Rc::try_unwrap(x).unwrap_err();
     drop(button);
     let _ = Rc::try_unwrap(x).unwrap();

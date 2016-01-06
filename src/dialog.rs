@@ -6,8 +6,11 @@
  */
 
 use std::ffi::CStr;
+use std::mem;
+use std::ops::CoerceUnsized;
 use std::ptr;
 use iup_sys::*;
+use libc::{c_int};
 use super::{
     Control,
     UnwrapHandle,
@@ -19,6 +22,9 @@ use super::attributes::{
     TitleAttribute,
 };
 use super::callbacks::{
+    Event,
+    Token,
+    CallbackRegistry,
     MenuCommonCallbacks,
     NonMenuCommonCallbacks,
 };
@@ -70,6 +76,60 @@ impl Dialog {
             IupRefresh(self.handle());
         }
     }
+
+    pub fn show_event<'a>(&'a self) -> Event<'a, FnMut(ShowState), ShowCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &SHOW_CALLBACKS)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ShowState {
+    Hide,
+    Show,
+    Restore,
+    Minimize,
+    Maximize,
+}
+
+impl ShowState {
+    fn from_int(state: c_int) -> ShowState {
+        match state {
+            IUP_HIDE => ShowState::Hide,
+            IUP_SHOW => ShowState::Show,
+            IUP_RESTORE => ShowState::Restore,
+            IUP_MINIMIZE => ShowState::Minimize,
+            IUP_MAXIMIZE => ShowState::Maximize,
+            _ => panic!("unknown ShowState"),
+        }
+    }
+
+    fn to_int(state: ShowState) -> c_int {
+        match state {
+            ShowState::Hide => IUP_HIDE,
+            ShowState::Show => IUP_SHOW,
+            ShowState::Restore => IUP_RESTORE,
+            ShowState::Minimize => IUP_MINIMIZE,
+            ShowState::Maximize => IUP_MAXIMIZE,
+        }
+    }
+}
+
+callback_token!(ShowCallbackToken);
+thread_local!(
+    static SHOW_CALLBACKS: CallbackRegistry<FnMut(ShowState), ShowCallbackToken> =
+        CallbackRegistry::new("SHOW_CB", unsafe { mem::transmute::<_, Icallback>(show_cb) })
+);
+extern fn show_cb(ih: *mut Ihandle, state: c_int) -> c_int {
+    SHOW_CALLBACKS.with(|reg| {
+        if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
+            let state = ShowState::from_int(state);
+            for cb in cbs {
+                cb.1(state);
+            }
+        }
+    });
+    IUP_DEFAULT
 }
 
 impl_control_traits!(Dialog);

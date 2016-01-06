@@ -56,7 +56,7 @@ impl Button {
         }
     }
 
-    pub fn action<'a>(&'a self) -> Event<'a, FnMut(), ButtonActionCallbackToken>
+    pub fn action_event<'a>(&'a self) -> Event<'a, FnMut(), ButtonActionCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &'a Control, &BUTTON_ACTION_CALLBACKS)
     }
@@ -77,8 +77,8 @@ impl ButtonCallback for Button {}
 callback_token!(ButtonActionCallbackToken);
 thread_local!(
     static BUTTON_ACTION_CALLBACKS: CallbackRegistry<FnMut(), ButtonActionCallbackToken> =
-        CallbackRegistry::new("ACTION", button_action)
+        CallbackRegistry::new("ACTION", button_action_cb)
 );
-extern fn button_action(ih: *mut Ihandle) -> c_int {
+extern fn button_action_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &BUTTON_ACTION_CALLBACKS)
 }

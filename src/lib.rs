@@ -46,7 +46,7 @@ mod button;
 mod dialog;
 mod handle_rc;
 
-pub use dialog::{Dialog};
+pub use dialog::{Dialog, ShowState};
 pub use button::Button;
 pub use containers::{Container, Fill, Hbox, Vbox};
 pub use callbacks::{CallbackAction, Event};
@@ -67,6 +67,12 @@ pub fn main_loop() {
     unsafe {
         iup_open();
         IupMainLoop();
+    }
+}
+
+pub fn exit_loop() {
+    unsafe {
+        IupExitLoop();
     }
 }
 

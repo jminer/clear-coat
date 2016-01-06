@@ -16,7 +16,7 @@ fn main() {
     button1.set_title("Push Me");
     let button2 = Button::new();
     button2.set_title("Hi");
-    button1.action().add_callback(|| println!("you pushed it!"));
+    button1.action_event().add(|| println!("you pushed it!"));
     let button3 = Button::new();
     button3.set_title("Hi");
     let button4 = Button::new();
@@ -32,8 +32,8 @@ fn main() {
     dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center)
           .expect("There was a problem showing the window");
     dialog.set_title("Howdy");
-    let t = dialog.leave_window().add_callback(|| println!("left window 1"));
-    dialog.leave_window().add_callback(|| println!("left window 2"));
-    dialog.leave_window().remove_callback(t);
+    let t = dialog.leave_window_event().add(|| println!("left window 1"));
+    dialog.leave_window_event().add(|| println!("left window 2"));
+    dialog.leave_window_event().remove(t);
     clear_coat::main_loop();
 }

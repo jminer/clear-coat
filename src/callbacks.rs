@@ -55,7 +55,7 @@ macro_rules! callback_token {
 pub struct CallbackRegistry<F: ?Sized + 'static, T: Into<Token> + From<Token>> {
     cb_name: &'static str,
     cb_fn: Icallback,
-    callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
+    pub callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
     phantom: PhantomData<*const T>,
 }
 
@@ -131,13 +131,13 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
         Event { control: control, reg: reg }
     }
 
-    pub fn add_callback<G>(&self, cb: G) -> T
+    pub fn add<G>(&self, cb: G) -> T
     where Box<G>: CoerceUnsized<Box<F>>
     {
         self.reg.with(|reg| reg.add_callback_inner(self.control.handle(), Box::new(cb) as Box<F>))
     }
 
-    pub fn remove_callback(&self, token: T) {
+    pub fn remove(&self, token: T) {
         self.reg.with(|reg| reg.remove_callback(self.control.handle(), token))
     }
 }
@@ -145,45 +145,45 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
 
 
 pub trait MenuCommonCallbacks : Control {
-    // fn map();
-    // fn unmap();
-    // fn destroy();
+    // fn map_event();
+    // fn unmap_event();
+    // fn destroy_event();
 }
 
 
 callback_token!(EnterWindowCallbackToken);
 thread_local!(
     static ENTER_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), EnterWindowCallbackToken> =
-        CallbackRegistry::new("ENTERWINDOW_CB", enter_window)
+        CallbackRegistry::new("ENTERWINDOW_CB", enter_window_cb)
 );
-extern fn enter_window(ih: *mut Ihandle) -> c_int {
+extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
 }
 
 callback_token!(LeaveWindowCallbackToken);
 thread_local!(
     static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), LeaveWindowCallbackToken> =
-        CallbackRegistry::new("LEAVEWINDOW_CB", leave_window)
+        CallbackRegistry::new("LEAVEWINDOW_CB", leave_window_cb)
 );
-extern fn leave_window(ih: *mut Ihandle) -> c_int {
+extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
 }
 
 pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
-    // fn get_focus();
-    // fn kill_focus();
+    // fn get_focus_event();
+    // fn kill_focus_event();
 
-    fn enter_window<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
+    fn enter_window_event<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &ENTER_WINDOW_CALLBACKS)
     }
 
-    fn leave_window<'a>(&'a self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
+    fn leave_window_event<'a>(&'a self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &LEAVE_WINDOW_CALLBACKS)
     }
 
-    // fn k_any();
+    // fn k_any_event();
 }
 
 
@@ -200,9 +200,9 @@ pub struct ButtonArgs {
 callback_token!(ButtonCallbackToken);
 thread_local!(
     static BUTTON_CALLBACKS: CallbackRegistry<FnMut(&ButtonArgs), ButtonCallbackToken> =
-        CallbackRegistry::new("BUTTON_CB",  unsafe { mem::transmute::<_, Icallback>(button) })
+        CallbackRegistry::new("BUTTON_CB",  unsafe { mem::transmute::<_, Icallback>(button_cb) })
 );
-unsafe extern fn button(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_int, y: c_int, status: *mut c_char) -> c_int {
+unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_int, y: c_int, status: *mut c_char) -> c_int {
     // Maybe the callback should be able to return Ignore (and thus this function return
     // IUP_IGNORE). My main hesitation is that IUP's docs state that it is system
     // dependent: "On some controls if IUP_IGNORE is returned the action is ignored (this is
@@ -226,7 +226,7 @@ unsafe extern fn button(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_in
 }
 
 pub trait ButtonCallback {
-    fn button<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
+    fn button_event<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &BUTTON_CALLBACKS)
     }

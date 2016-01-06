@@ -20,13 +20,13 @@ fn test_destroy_with_multiple_children() {
     let (x2, y2, z2, w2) = (x.clone(), y.clone(), z.clone(), w.clone());
 
     let button_x = Button::new();
-    button_x.action().add_callback(move || println!("{}", *x2));
+    button_x.action_event().add(move || println!("{}", *x2));
     let button_y = Button::new();
-    button_y.action().add_callback(move || println!("{}", *y2));
+    button_y.action_event().add(move || println!("{}", *y2));
     let button_z = Button::new();
-    button_z.action().add_callback(move || println!("{}", *z2));
+    button_z.action_event().add(move || println!("{}", *z2));
     let button_w = Button::new();
-    button_w.action().add_callback(move || println!("{}", *w2));
+    button_w.action_event().add(move || println!("{}", *w2));
     let dialog = Dialog::with_child(&vbox!(&button_x, &button_y, &button_z, &button_w));
     drop(button_y);
     let (x, y, z, w) = (Rc::try_unwrap(x).unwrap_err(), Rc::try_unwrap(y).unwrap_err(),

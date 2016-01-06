@@ -19,7 +19,7 @@ fn test_deduplication() {
     let x = Rc::new(5);
     let x2 = x.clone();
     let dialog = Dialog::new();
-    dialog.enter_window().add_callback(move || println!("{}", *x2));
+    dialog.enter_window_event().add(move || println!("{}", *x2));
     let handle = dialog.handle();
     let dialog2 = unsafe { Dialog::from_handle(handle) };
     let dialog3 = unsafe { Dialog::from_handle(handle) };
