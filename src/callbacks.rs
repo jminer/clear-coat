@@ -77,7 +77,7 @@ macro_rules! callback_token {
 pub struct CallbackRegistry<F: ?Sized + 'static, T: Into<Token> + From<Token>> {
     cb_name: &'static str,
     cb_fn: Icallback,
-    pub callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
+    callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
     phantom: PhantomData<*const T>,
 }
 
@@ -257,22 +257,20 @@ unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c
     // IUP_IGNORE). My main hesitation is that IUP's docs state that it is system
     // dependent: "On some controls if IUP_IGNORE is returned the action is ignored (this is
     // system dependent)." Plus, it doesn't seem really useful and is more verbose.
-    BUTTON_CALLBACKS.with(|reg| {
-        if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
-            let args = ButtonArgs {
-                button: MouseButton::from_int(button),
-                pressed: pressed != 0,
-                x: x as i32,
-                y: y as i32,
-                status: KeyboardMouseStatus::from_cstr(status),
-                _dummy: (),
-            };
-            for cb in cbs {
-                cb.1(&args);
-            }
+    with_callbacks(ih, &BUTTON_CALLBACKS, |cbs| {
+        let args = ButtonArgs {
+            button: MouseButton::from_int(button),
+            pressed: pressed != 0,
+            x: x as i32,
+            y: y as i32,
+            status: KeyboardMouseStatus::from_cstr(status),
+            _dummy: (),
+        };
+        for cb in cbs {
+            cb.1(&args);
         }
-    });
-    IUP_DEFAULT
+        IUP_DEFAULT
+    })
 }
 
 pub trait ButtonCallback {
