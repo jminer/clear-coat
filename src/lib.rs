@@ -6,6 +6,8 @@
  */
 
 #![feature(coerce_unsized)]
+#![feature(std_panic)]
+#![feature(recover)]
 
 extern crate libc;
 extern crate iup_sys;
@@ -46,7 +48,7 @@ mod button;
 mod dialog;
 mod handle_rc;
 
-pub use dialog::{Dialog, ShowState};
+pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use button::Button;
 pub use containers::{Container, Fill, Hbox, Vbox};
 pub use callbacks::{CallbackAction, Event};
@@ -63,10 +65,36 @@ use std::sync::atomic::{AtomicIsize, Ordering, ATOMIC_ISIZE_INIT};
 use libc::{c_char, c_int};
 use iup_sys::*;
 
+// returns false if a panic is pending, but cannot be propagated because the main loop level is too high
+fn propagate_panic() -> bool {
+    if callbacks::is_panic_pending() && main_loop_level() > 0 {
+        exit_loop();
+        return false;
+    }
+    if let Some(payload) = callbacks::take_panic_payload() {
+        // TODO: once a new nightly is released, use this
+        //::std::panic::propagate(payload);
+        panic!(payload.downcast_ref::<String>().unwrap_or(&String::new()).clone());
+    }
+    true
+}
+
 pub fn main_loop() {
     unsafe {
         iup_open();
+
+        // Callbacks can be called before main_loop() ever is. If they have been and have
+        // panicked, we need to panic without calling IupMainLoop(). (IupMainLoopLevel() will
+        // be 0 in a callback if it is running before IupMainLoop() has been called.)
+        if !propagate_panic() { return; }
         IupMainLoop();
+        propagate_panic();
+    }
+}
+
+pub fn main_loop_level() -> i32 {
+    unsafe {
+        IupMainLoopLevel()
     }
 }
 

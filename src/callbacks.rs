@@ -5,11 +5,13 @@
  * modified, or distributed except according to those terms.
  */
 
+use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{CoerceUnsized};
+use std::panic::{self, RecoverSafe};
 use std::rc::Rc;
 use std::thread::LocalKey;
 use libc::{c_int, c_char};
@@ -24,6 +26,26 @@ pub enum CallbackAction {
     // Close,
     Ignore,
     Continue,
+}
+
+// To avoid letting panics unwind into C stack frames, we need to catch the panic,
+// store it away, and check it later when there's no C code on the stack.
+thread_local!(
+    static PANIC_PAYLOAD: RefCell<Option<Box<Any + Send + 'static>>> = RefCell::new(None)
+);
+
+pub fn set_panic_payload(payload: Box<Any + Send + 'static>) {
+    PANIC_PAYLOAD.with(|cell|
+        *cell.borrow_mut() = Some(payload)
+    );
+}
+
+pub fn is_panic_pending() -> bool {
+    PANIC_PAYLOAD.with(|cell| cell.borrow().is_some())
+}
+
+pub fn take_panic_payload() -> Option<Box<Any + Send + 'static>> {
+    PANIC_PAYLOAD.with(|cell| cell.borrow_mut().take())
 }
 
 // If a callback's documentation does not specify valid return values, then only IUP_DEFAULT is
@@ -108,17 +130,45 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     }
 }
 
+struct AssertRecoverSafeVal<T: ?Sized>(T);
+
+impl<T: ?Sized> RecoverSafe for AssertRecoverSafeVal<T> {}
+
+pub fn with_callbacks<F, G: ?Sized, T>(ih: *mut Ihandle,
+                                       reg: &'static LocalKey<CallbackRegistry<G, T>>, f: F)
+                                       -> c_int
+                                       where F: FnOnce(&mut [(usize, Box<G>)]) -> c_int,
+                                             G: 'static,
+                                             T: Into<Token> + From<Token> {
+    let h = AssertRecoverSafeVal(f);
+    let result = panic::recover(move || {
+        reg.with(move |reg| {
+            if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
+                h.0(cbs)
+            } else {
+                IUP_DEFAULT
+            }
+        })
+    });
+    match result {
+        Ok(r) => r,
+        Err(err) => {
+            set_panic_payload(err);
+            unsafe { IupExitLoop(); }
+            IUP_DEFAULT
+        },
+    }
+}
+
 pub fn simple_callback<T>(ih: *mut Ihandle,
                       reg: &'static LocalKey<CallbackRegistry<FnMut(), T>>)
                       -> c_int where T: Into<Token> + From<Token> {
-    reg.with(|reg| {
-        if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
-            for cb in cbs {
-                cb.1();
-            }
+    with_callbacks(ih, reg, |cbs| {
+        for cb in cbs {
+            cb.1();
         }
-    });
-    IUP_DEFAULT
+        IUP_DEFAULT
+    })
 }
 
 pub struct Event<'a, F: ?Sized + 'static, T: 'static + Into<Token> + From<Token>> {

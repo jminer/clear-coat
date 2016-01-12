@@ -27,6 +27,7 @@ use super::callbacks::{
     CallbackRegistry,
     MenuCommonCallbacks,
     NonMenuCommonCallbacks,
+    with_callbacks,
 };
 use super::containers::Container;
 use super::handle_rc::HandleRc;
@@ -121,15 +122,13 @@ thread_local!(
         CallbackRegistry::new("SHOW_CB", unsafe { mem::transmute::<_, Icallback>(show_cb) })
 );
 extern fn show_cb(ih: *mut Ihandle, state: c_int) -> c_int {
-    SHOW_CALLBACKS.with(|reg| {
-        if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
-            let state = ShowState::from_int(state);
-            for cb in cbs {
-                cb.1(state);
-            }
+    with_callbacks(ih, &SHOW_CALLBACKS, |cbs| {
+        let state = ShowState::from_int(state);
+        for cb in cbs {
+            cb.1(state);
         }
-    });
-    IUP_DEFAULT
+        IUP_DEFAULT
+    })
 }
 
 impl_control_traits!(Dialog);
