@@ -79,6 +79,19 @@ fn propagate_panic() -> bool {
     true
 }
 
+/// Executes the user interaction until `exit_loop` is called or the last visible dialog is hidden.
+///
+/// If you cascade many calls to `main_loop`, there must be a `exit_loop` call for each cascade
+/// level, as hiding all dialogs will close only one level. Call `main_loop_level` to obtain the
+/// current level.
+///
+/// If `main_loop` is called without any visible dialogs and no active timers, the application will
+/// hang, and it will not be possible to close the main loop. The process will have to be
+/// interrupted by the system.
+///
+/// When the last visible dialog is hidden, the `exit_loop` function is automatically called,
+/// causing the `main_loop` to return. To avoid that, call `set_lock_loop(true)` before hiding the
+/// last dialog.
 pub fn main_loop() {
     unsafe {
         iup_open();
