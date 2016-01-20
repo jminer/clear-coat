@@ -7,7 +7,7 @@
 
 use std::any::Any;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{hash_map, HashMap};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{CoerceUnsized};
@@ -17,7 +17,7 @@ use std::thread::LocalKey;
 use libc::{c_int, c_char};
 use iup_sys::*;
 use super::{Control, MouseButton, KeyboardMouseStatus};
-use super::handle_rc::add_destroy_callback;
+use super::handle_rc::{add_ldestroy_callback, remove_ldestroy_callback};
 
 pub enum CallbackAction {
     Default,
@@ -55,13 +55,15 @@ pub fn take_panic_payload() -> Option<Box<Any + Send + 'static>> {
 
 // TODO: if Token is public, then I need to make sure that converting from a MapCallbackToken to
 // a DestroyToken can't cause unsafety
+#[derive(Debug)]
 pub struct Token {
-    id: usize,
-    ih: *mut Ihandle,
+    pub id: usize,
+    pub ih: *mut Ihandle,
 }
 
 macro_rules! callback_token {
     ($name:ident) => {
+        #[derive(Debug)]
         pub struct $name(Token);
 
         impl From<$name> for Token {
@@ -74,10 +76,22 @@ macro_rules! callback_token {
     };
 }
 
+struct ControlCallbacks<F: ?Sized + 'static> {
+    ldestroy_token: Token,
+    // Copy-on-write is used on the vector in the `Rc` so that if a callback is added or removed
+    // inside a callback, it can make the change to a copy of the vector. The in-progress
+    // notification can continue iterating over the original vector. To make the vector
+    // `Clone`, each function is wrapped in an `Rc`. Since each function is in a `RefCell`, there
+    // is no need to have the vector in a RefCell. Iterating over the vector only requires read
+    // access (even to reentrantly iterate over the vector because you can have multiple
+    // immutable references), and for write access in add/remove_callback, `make_mut` is used.
+    vec: Rc<Vec<(usize, Rc<RefCell<F>>)>>,
+}
+
 pub struct CallbackRegistry<F: ?Sized + 'static, T: Into<Token> + From<Token>> {
     cb_name: &'static str,
     cb_fn: Icallback,
-    callbacks: Rc<RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<F>)>>>>,
+    callbacks: Rc<RefCell<HashMap<*mut Ihandle, ControlCallbacks<F>>>>,
     phantom: PhantomData<*const T>,
 }
 
@@ -85,21 +99,25 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     // Icallback is the most common type of callback, but there are many exceptions. If the
     // callback's signature does not match Icallback, just cast to Icallback.
     pub fn new(cb_name: &'static str, cb_fn: Icallback) -> CallbackRegistry<F, T> {
-        let reg = CallbackRegistry {
+        CallbackRegistry {
             cb_name: cb_name,
             cb_fn: cb_fn,
             callbacks: Rc::new(RefCell::new(HashMap::new())),
             phantom: PhantomData,
-        };
-        // When a control is destroyed, we need to remove all of its callbacks.
-        let callbacks = reg.callbacks.clone();
-        add_destroy_callback(move |ih| { callbacks.borrow_mut().remove(&ih); });
-        reg
+        }
     }
 
-    fn add_callback_inner(&self, ih: *mut Ihandle, cb: Box<F>) -> T {
+    // `add_callback` and `remove_callback` do not try to borrow the `RefCell` until they have
+    // called `Rc::make_mut` (the `RefCell` could already be borrowed by `with_callbacks`). After
+    // `Rc::make_mut`, it is guaranteed safe to borrow.
+    fn add_callback_inner(&self, ih: *mut Ihandle, cb: Rc<RefCell<F>>) -> T {
         let mut map = self.callbacks.borrow_mut();
-        let cbs = map.entry(ih).or_insert_with(|| Vec::with_capacity(4));
+        let cc = map.entry(ih).or_insert_with(|| {
+            let callbacks2 = self.callbacks.clone();
+            let t = add_ldestroy_callback(ih, move |ih| { callbacks2.borrow_mut().remove(&ih); });
+            ControlCallbacks { ldestroy_token: t, vec: Rc::new(Vec::with_capacity(4)) }
+        });
+        let cbs = Rc::make_mut(&mut cc.vec);
         let id = cbs.last().map(|&(id, _)| id + 1).unwrap_or(0);
         cbs.push((id, cb));
 
@@ -111,21 +129,39 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     }
 
     pub fn add_callback<G>(&self, ih: *mut Ihandle, cb: G) -> T
-    where Box<G>: CoerceUnsized<Box<F>>
+    where Rc<RefCell<G>>: CoerceUnsized<Rc<RefCell<F>>>
     {
-        self.add_callback_inner(ih, Box::new(cb) as Box<F>)
+        self.add_callback_inner(ih, Rc::new(RefCell::new(cb)) as Rc<RefCell<F>>)
     }
 
     pub fn remove_callback(&self, ih: *mut Ihandle, token: T) {
         let token: Token = token.into();
         assert!(ih == token.ih, "token used with wrong control");
         let mut map = self.callbacks.borrow_mut();
-        if let Some(cbs) = map.get_mut(&token.ih) {
-            if let Some(index) = cbs.iter().position(|&(id, _)| id == token.id) {
+        if let hash_map::Entry::Occupied(mut entry) = map.entry(token.ih) {
+            let is_empty = {
+                // Use make_mut() in case the vector is being iterated over.
+                let cbs = Rc::make_mut(&mut entry.get_mut().vec);
+                let index = cbs.iter().position(|&(id, _)| id == token.id).expect("failed to remove callback");
                 cbs.remove(index);
-            } else {
-                panic!("failed to remove callback");
+
+                cbs.is_empty()
+            };
+            if is_empty {
+                let ControlCallbacks { ldestroy_token, .. } = entry.remove();
+                remove_ldestroy_callback(ldestroy_token);
             }
+
+            // I could use the below code with non-lexical borrows.
+            // Use make_mut() in case the vector is being iterated over.
+            //let cbs = Rc::make_mut(&mut entry.get_mut().vec);
+            //let index = cbs.iter().position(|&(id, _)| id == token.id).expect("failed to remove callback");
+            //cbs.remove(index);
+
+            //if cbs.is_empty() {
+            //    let ControlCallbacks { ldestroy_token, .. } = entry.remove();
+            //    remove_ldestroy_callback(ldestroy_token);
+            //}
         }
     }
 }
@@ -134,17 +170,19 @@ struct AssertRecoverSafeVal<T: ?Sized>(T);
 
 impl<T: ?Sized> RecoverSafe for AssertRecoverSafeVal<T> {}
 
+// Takes a function that takes one parameter that is a slice of (id, callback) tuples.
 pub fn with_callbacks<F, G: ?Sized, T>(ih: *mut Ihandle,
                                        reg: &'static LocalKey<CallbackRegistry<G, T>>, f: F)
                                        -> c_int
-                                       where F: FnOnce(&mut [(usize, Box<G>)]) -> c_int,
+                                       where F: FnOnce(&[(usize, Rc<RefCell<G>>)]) -> c_int,
                                              G: 'static,
                                              T: Into<Token> + From<Token> {
     let h = AssertRecoverSafeVal(f);
     let result = panic::recover(move || {
         reg.with(move |reg| {
-            if let Some(cbs) = reg.callbacks.borrow_mut().get_mut(&ih) {
-                h.0(cbs)
+            let cbs_rc = reg.callbacks.borrow().get(&ih).map(|cc| cc.vec.clone());
+            if let Some(cbs) = cbs_rc {
+                h.0(&*cbs)
             } else {
                 IUP_DEFAULT
             }
@@ -165,7 +203,7 @@ pub fn simple_callback<T>(ih: *mut Ihandle,
                       -> c_int where T: Into<Token> + From<Token> {
     with_callbacks(ih, reg, |cbs| {
         for cb in cbs {
-            cb.1();
+            cb.1.borrow_mut();
         }
         IUP_DEFAULT
     })
@@ -182,9 +220,9 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
     }
 
     pub fn add<G>(&self, cb: G) -> T
-    where Box<G>: CoerceUnsized<Box<F>>
+    where Rc<RefCell<G>>: CoerceUnsized<Rc<RefCell<F>>>
     {
-        self.reg.with(|reg| reg.add_callback_inner(self.control.handle(), Box::new(cb) as Box<F>))
+        self.reg.with(|reg| reg.add_callback_inner(self.control.handle(), Rc::new(RefCell::new(cb)) as Rc<RefCell<F>>))
     }
 
     pub fn remove(&self, token: T) {
@@ -267,7 +305,7 @@ unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c
             _dummy: (),
         };
         for cb in cbs {
-            cb.1(&args);
+            (&mut *cb.1.borrow_mut())(&args);
         }
         IUP_DEFAULT
     })

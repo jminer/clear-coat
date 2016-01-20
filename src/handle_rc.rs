@@ -12,19 +12,73 @@ use std::rc::{Rc, Weak};
 use std::ptr;
 use libc::c_int;
 use iup_sys::*;
+use callbacks::Token;
 
 thread_local!(
-    static DESTROY_CALLBACKS: RefCell<Vec<Box<FnMut(*mut Ihandle)>>> = RefCell::new(Vec::new())
+    static LDESTROY_CALLBACKS: RefCell<HashMap<*mut Ihandle, Vec<(usize, Box<FnMut(*mut Ihandle)>)>>> =
+        RefCell::new(HashMap::new())
 );
 
-fn add_destroy_callback_inner(f: Box<FnMut(*mut Ihandle)>) {
-    DESTROY_CALLBACKS.with(|cbs|
-        cbs.borrow_mut().push(f)
-    );
+
+// simplified version of CallbackRegistry::add_callback
+// An ldestroy callback should hold a reference to a control, so that when it is dropped a control
+// is dropped. Doing so will cause the LDESTROY_CALLBACKS HashMap to be accessed, causing a panic
+// due to being borrowed by remove_ldestroy_callback.
+pub fn add_ldestroy_callback_inner(ih: *mut Ihandle, cb: Box<FnMut(*mut Ihandle) + 'static>) -> Token {
+    LDESTROY_CALLBACKS.with(|reg| {
+        let mut map = reg.borrow_mut();
+        let cbs = map.entry(ih).or_insert_with(|| { Vec::with_capacity(4) });
+        let id = cbs.last().map(|&(id, _)| id + 1).unwrap_or(0);
+        cbs.push((id, cb));
+
+        Token { id: id, ih: ih }
+    })
 }
 
-pub fn add_destroy_callback<F: 'static + FnMut(*mut Ihandle)>(f: F) {
-    add_destroy_callback_inner(Box::new(f));
+pub fn add_ldestroy_callback<F: 'static + FnMut(*mut Ihandle)>(ih: *mut Ihandle, cb: F) -> Token {
+    add_ldestroy_callback_inner(ih, Box::new(cb))
+}
+
+// simplified version of CallbackRegistry::remove_callback
+pub fn remove_ldestroy_callback(token: Token) {
+    LDESTROY_CALLBACKS.with(|reg| {
+        let mut map = reg.borrow_mut();
+        if let hash_map::Entry::Occupied(mut entry) = map.entry(token.ih) {
+            let is_empty = {
+                let cbs = entry.get_mut();
+                let index = cbs.iter().position(|&(id, _)| id == token.id).expect("failed to remove callback");
+                // TODO: if this causes ldestroy_cb() to be called, it will panic
+                cbs.remove(index);
+
+                cbs.is_empty()
+            };
+            if is_empty {
+                entry.remove();
+            }
+
+            // I could use the below with non-lexical borrows.
+            //let cbs = entry.get_mut();
+            //let index = cbs.iter().position(|&(id, _)| id == token.id).expect("failed to remove callback");
+            // TODO: if this causes ldestroy_cb() to be called, it will panic
+            //cbs.remove(index);
+
+            //if cbs.is_empty() {
+            //    entry.remove();
+            //}
+        }
+    });
+}
+
+extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
+    handle_rc_destroy_cb(ih);
+    LDESTROY_CALLBACKS.with(|cell| {
+        if let Some(mut cbs) = cell.borrow_mut().remove(&ih) {
+            for cb in cbs.iter_mut() {
+                cb.1(ih);
+            }
+        }
+        IUP_DEFAULT
+    })
 }
 
 thread_local!(
@@ -63,16 +117,6 @@ pub fn handle_rc_destroy_cb(ih: *mut Ihandle) {
             }
         }
     });
-}
-
-extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
-    handle_rc_destroy_cb(ih);
-    DESTROY_CALLBACKS.with(|cbs| {
-        for cb in cbs.borrow_mut().iter_mut() {
-            cb(ih);
-        }
-    });
-    IUP_DEFAULT
 }
 
 /// A `HandleBox` is the wrapper's one reference to a control. If there are multiple `HandleRc`s,

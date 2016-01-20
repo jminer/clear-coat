@@ -125,7 +125,7 @@ extern fn show_cb(ih: *mut Ihandle, state: c_int) -> c_int {
     with_callbacks(ih, &SHOW_CALLBACKS, |cbs| {
         let state = ShowState::from_int(state);
         for cb in cbs {
-            cb.1(state);
+            (&mut *cb.1.borrow_mut())(state);
         }
         IUP_DEFAULT
     })
