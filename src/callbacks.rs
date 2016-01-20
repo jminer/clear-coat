@@ -28,6 +28,26 @@ pub enum CallbackAction {
     Continue,
 }
 
+impl CallbackAction {
+    #[allow(dead_code)]
+    fn from_int(action: c_int) -> CallbackAction {
+        match action {
+            IUP_DEFAULT => CallbackAction::Default,
+            IUP_IGNORE => CallbackAction::Ignore,
+            IUP_CONTINUE => CallbackAction::Continue,
+            _ => panic!("can't convert callback action"),
+        }
+    }
+
+    fn to_int(action: CallbackAction) -> c_int {
+        match action {
+            CallbackAction::Default => IUP_DEFAULT,
+            CallbackAction::Ignore => IUP_IGNORE,
+            CallbackAction::Continue => IUP_CONTINUE,
+        }
+    }
+}
+
 // To avoid letting panics unwind into C stack frames, we need to catch the panic,
 // store it away, and check it later when there's no C code on the stack.
 thread_local!(
