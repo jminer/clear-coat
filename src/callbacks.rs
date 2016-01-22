@@ -224,7 +224,7 @@ pub fn simple_callback<T>(ih: *mut Ihandle,
                       -> c_int where T: Into<Token> + From<Token> {
     with_callbacks(ih, reg, |cbs| {
         for cb in cbs {
-            cb.1.borrow_mut();
+            (&mut *cb.1.borrow_mut())();
         }
         IUP_DEFAULT
     })
@@ -260,6 +260,24 @@ pub trait MenuCommonCallbacks : Control {
 }
 
 
+callback_token!(GetFocusCallbackToken);
+thread_local!(
+    static GET_FOCUS_CALLBACKS: CallbackRegistry<FnMut(), GetFocusCallbackToken> =
+        CallbackRegistry::new("GETFOCUS_CB", get_focus_cb)
+);
+extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &GET_FOCUS_CALLBACKS)
+}
+
+callback_token!(KillFocusCallbackToken);
+thread_local!(
+    static KILL_FOCUS_CALLBACKS: CallbackRegistry<FnMut(), KillFocusCallbackToken> =
+        CallbackRegistry::new("KILLFOCUS_CB", kill_focus_cb)
+);
+extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &KILL_FOCUS_CALLBACKS)
+}
+
 callback_token!(EnterWindowCallbackToken);
 thread_local!(
     static ENTER_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), EnterWindowCallbackToken> =
@@ -279,8 +297,15 @@ extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
 }
 
 pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
-    // fn get_focus_event();
-    // fn kill_focus_event();
+    fn get_focus_event<'a>(&'a self) -> Event<'a, FnMut(), GetFocusCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &GET_FOCUS_CALLBACKS)
+    }
+
+    fn kill_focus_event<'a>(&'a self) -> Event<'a, FnMut(), KillFocusCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &KILL_FOCUS_CALLBACKS)
+    }
 
     fn enter_window_event<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
