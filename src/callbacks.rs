@@ -23,14 +23,14 @@ pub enum CallbackAction {
     Default,
     // Close is not needed because it is just as easy to call IupExitLoop()
     // and then the API is smaller.
-    // Close,
+    Close,
     Ignore,
     Continue,
 }
 
 impl CallbackAction {
     #[allow(dead_code)]
-    fn from_int(action: c_int) -> CallbackAction {
+    pub fn from_int(action: c_int) -> CallbackAction {
         match action {
             IUP_DEFAULT => CallbackAction::Default,
             IUP_IGNORE => CallbackAction::Ignore,
@@ -39,9 +39,10 @@ impl CallbackAction {
         }
     }
 
-    fn to_int(action: CallbackAction) -> c_int {
-        match action {
+    pub fn to_int(&self) -> c_int {
+        match *self {
             CallbackAction::Default => IUP_DEFAULT,
+            CallbackAction::Close => IUP_CLOSE,
             CallbackAction::Ignore => IUP_IGNORE,
             CallbackAction::Continue => IUP_CONTINUE,
         }
@@ -307,7 +308,7 @@ pub struct ButtonArgs {
 
 callback_token!(ButtonCallbackToken);
 thread_local!(
-    static BUTTON_CALLBACKS: CallbackRegistry<FnMut(&ButtonArgs), ButtonCallbackToken> =
+    static BUTTON_CALLBACKS: CallbackRegistry<FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken> =
         CallbackRegistry::new("BUTTON_CB",  unsafe { mem::transmute::<_, Icallback>(button_cb) })
 );
 unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_int, y: c_int, status: *mut c_char) -> c_int {
@@ -324,15 +325,19 @@ unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c
             status: KeyboardMouseStatus::from_cstr(status),
             _dummy: (),
         };
+        let mut action = CallbackAction::Default;
         for cb in cbs {
-            (&mut *cb.1.borrow_mut())(&args);
+            match (&mut *cb.1.borrow_mut())(&args) {
+                CallbackAction::Default => {},
+                cb_action => action = cb_action,
+            }
         }
-        IUP_DEFAULT
+        action.to_int()
     })
 }
 
 pub trait ButtonCallback {
-    fn button_event<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs), ButtonCallbackToken>
+    fn button_event<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &BUTTON_CALLBACKS)
     }

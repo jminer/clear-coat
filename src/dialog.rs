@@ -22,6 +22,7 @@ use super::attributes::{
     TitleAttribute,
 };
 use super::callbacks::{
+    CallbackAction,
     Event,
     Token,
     CallbackRegistry,
@@ -78,7 +79,7 @@ impl Dialog {
         }
     }
 
-    pub fn show_event<'a>(&'a self) -> Event<'a, FnMut(ShowState), ShowCallbackToken>
+    pub fn show_event<'a>(&'a self) -> Event<'a, FnMut(ShowState) -> CallbackAction, ShowCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &SHOW_CALLBACKS)
     }
@@ -118,16 +119,21 @@ impl ShowState {
 
 callback_token!(ShowCallbackToken);
 thread_local!(
-    static SHOW_CALLBACKS: CallbackRegistry<FnMut(ShowState), ShowCallbackToken> =
+    static SHOW_CALLBACKS: CallbackRegistry<FnMut(ShowState) -> CallbackAction, ShowCallbackToken> =
         CallbackRegistry::new("SHOW_CB", unsafe { mem::transmute::<_, Icallback>(show_cb) })
 );
 extern fn show_cb(ih: *mut Ihandle, state: c_int) -> c_int {
     with_callbacks(ih, &SHOW_CALLBACKS, |cbs| {
         let state = ShowState::from_int(state);
+
+        let mut action = CallbackAction::Default;
         for cb in cbs {
-            (&mut *cb.1.borrow_mut())(state);
+            match (&mut *cb.1.borrow_mut())(state) {
+                CallbackAction::Default => {},
+                cb_action => action = cb_action,
+            }
         }
-        IUP_DEFAULT
+        action.to_int()
     })
 }
 

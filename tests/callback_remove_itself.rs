@@ -22,7 +22,7 @@ fn test_callback_remove_itself() {
     let token2: Rc<RefCell<Option<ShowCallbackToken>>> = token.clone();
     *token.borrow_mut() = Some(dialog.show_event().add(move |_| {
         dialog2.show_event().remove(token2.borrow_mut().take().unwrap());
-        exit_loop();
+        CallbackAction::Close
     }));
     drop(token);
     dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center).expect("could not show dialog");

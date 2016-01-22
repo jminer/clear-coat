@@ -17,7 +17,7 @@ fn test_drop_control_in_callback() {
     let dialog = Dialog::new();
     dialog.show_event().add(|_| {
         let _ = Button::new();
-        exit_loop();
+        CallbackAction::Close
     });
     dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center).expect("could not show dialog");
     main_loop();
