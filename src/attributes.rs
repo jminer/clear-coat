@@ -30,6 +30,7 @@ pub fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
     }
 }
 
+// This function isn't very error prone (see above), but isn't completely safe either.
 pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
     let value = IupGetAttribute(handle as *mut Ihandle, name.as_ptr() as *const c_char);
     CStr::from_ptr(value).to_string_lossy()
@@ -118,5 +119,18 @@ pub trait TitleAttribute : Control {
 
     fn set_title(&self, title: &str) {
         set_str_attribute(self.handle(), "TITLE", title);
+    }
+}
+
+pub trait OrientationAttribute : Control {
+    fn orientation(&self) -> ::Orientation {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "ORIENTATION");
+            ::Orientation::from_str(s.as_bytes())
+        }
+    }
+
+    fn set_orientation(&self, orientation: ::Orientation) {
+        set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
     }
 }

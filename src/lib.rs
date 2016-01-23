@@ -50,7 +50,7 @@ mod handle_rc;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use button::Button;
-pub use containers::{Container, Fill, Hbox, Vbox};
+pub use containers::{Container, Fill, Hbox, Vbox, GridBox};
 pub use callbacks::{CallbackAction, Event};
 
 // With this layout, you can glob import this module's contents but selectively import the
@@ -295,6 +295,84 @@ impl KeyboardMouseStatus {
             button3_pressed: iup_isbutton3(s),
             button4_pressed: iup_isbutton4(s),
             button5_pressed: iup_isbutton5(s),
+        }
+    }
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum VAlignment {
+    Top,
+    Center,
+    Bottom,
+}
+
+impl VAlignment {
+    fn from_str(s: &[u8]) -> VAlignment {
+        match s {
+            b"ATOP" => VAlignment::Top,
+            b"ACENTER" => VAlignment::Center,
+            b"ABOTTOM" => VAlignment::Bottom,
+            _ => panic!("unknown VAlignment"),
+        }
+    }
+
+    fn to_str(self) -> &'static str {
+        match self {
+            VAlignment::Top => "ATOP",
+            VAlignment::Center => "ACENTER",
+            VAlignment::Bottom => "ABOTTOM",
+        }
+    }
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum HAlignment {
+    Left,
+    Center,
+    Right,
+}
+
+impl HAlignment {
+    fn from_str(s: &[u8]) -> HAlignment {
+        match s {
+            b"ALEFT" => HAlignment::Left,
+            b"ACENTER" => HAlignment::Center,
+            b"ARIGHT" => HAlignment::Right,
+            _ => panic!("unknown HAlignment"),
+        }
+    }
+
+    fn to_str(self) -> &'static str {
+        match self {
+            HAlignment::Left => "ALEFT",
+            HAlignment::Center => "ACENTER",
+            HAlignment::Right => "ARIGHT",
+        }
+    }
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Orientation {
+    Horizontal,
+    Vertical,
+}
+
+impl Orientation {
+    fn from_str(s: &[u8]) -> Orientation {
+        match s {
+            b"HORIZONTAL" => Orientation::Horizontal,
+            b"VERTICAL" => Orientation::Vertical,
+            _ => panic!("unknown Orientation"),
+        }
+    }
+
+    fn to_str(self) -> &'static str {
+        match self {
+            Orientation::Horizontal => "HORIZONTAL",
+            Orientation::Vertical => "VERTICAL",
         }
     }
 }

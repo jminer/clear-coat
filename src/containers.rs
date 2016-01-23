@@ -9,6 +9,11 @@ use std::ptr;
 use iup_sys::*;
 use super::{Control, UnwrapHandle};
 use super::handle_rc::HandleRc;
+use super::attributes::{
+    OrientationAttribute,
+    set_str_attribute,
+    get_str_attribute_slice,
+};
 
 pub trait Container : Control {
     fn append(&self, new_child: &Control) -> Result<(), ()> {
@@ -158,4 +163,129 @@ macro_rules! vbox {
         }
     };
     ($($c:expr,)*) => { vbox!($($c),*) };
+}
+
+
+pub enum NumDiv {
+    Fixed(u32),
+    Auto,
+}
+
+#[derive(Clone)]
+pub struct GridBox(HandleRc);
+
+impl GridBox {
+    pub fn new(children: Option<&[&::Control]>) -> GridBox {
+        unsafe {
+            ::iup_open();
+            let (_children, children_handles) = wrapper_to_handles(children);
+            GridBox::from_handles(children_handles)
+        }
+    }
+
+    pub unsafe fn from_handles(children: *mut *mut Ihandle) -> GridBox {
+        let handle = IupGridBoxv(children);
+        GridBox(HandleRc::new(handle))
+    }
+
+    pub fn alignment_lin(&self, line: u32) -> ::VAlignment {
+        unsafe {
+            let attr = format!("ALIGNMENTLIN{}", line);
+            ::VAlignment::from_str(get_str_attribute_slice(self.handle(), &attr).as_bytes())
+        }
+    }
+
+    pub fn set_alignment_lin(&self, line: u32, alignment: ::VAlignment) {
+        set_str_attribute(self.handle(), &format!("ALIGNMENTLIN{}", line), alignment.to_str());
+    }
+
+    pub fn alignment_lin_all(&self) -> ::VAlignment {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTLIN");
+            ::VAlignment::from_str(s.as_bytes())
+        }
+    }
+
+    pub fn set_alignment_lin_all(&self, alignment: ::VAlignment) {
+        set_str_attribute(self.handle(), "ALIGNMENTLIN", alignment.to_str());
+    }
+
+    pub fn alignment_col(&self, column: u32) -> ::HAlignment {
+        unsafe {
+            let attr = format!("ALIGNMENTCOL{}", column);
+            ::HAlignment::from_str(get_str_attribute_slice(self.handle(), &attr).as_bytes())
+        }
+    }
+
+    pub fn set_alignment_col(&self, column: u32, alignment: ::HAlignment) {
+        set_str_attribute(self.handle(), &format!("ALIGNMENTCOL{}", column), alignment.to_str());
+    }
+
+    pub fn alignment_col_all(&self) -> ::HAlignment {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTCOL");
+            ::HAlignment::from_str(s.as_bytes())
+        }
+    }
+
+    pub fn set_alignment_col_all(&self, alignment: ::HAlignment) {
+        set_str_attribute(self.handle(), "ALIGNMENTCOL", alignment.to_str());
+    }
+
+    pub fn num_div(&self) -> NumDiv {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "NUMDIV");
+            if s.as_bytes() == b"AUTO" {
+                NumDiv::Auto
+            } else {
+                NumDiv::Fixed(s.parse().expect("could not convert NUMDIV to an integer"))
+            }
+        }
+    }
+
+    pub fn set_num_div(&self, num: NumDiv) {
+        match num {
+            NumDiv::Fixed(i) => set_str_attribute(self.handle(), "NUMDIV", &i.to_string()),
+            NumDiv::Auto => set_str_attribute(self.handle(), "NUMDIV", "AUTO"),
+        }
+    }
+
+    pub fn num_lin(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "NUMLIN");
+            s.parse().expect("could not convert NUMLIN to an integer")
+        }
+    }
+
+    pub fn num_col(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "NUMCOL");
+            s.parse().expect("could not convert NUMLIN to an integer")
+        }
+    }
+}
+
+impl_control_traits!(GridBox);
+
+impl Container for GridBox {}
+
+impl OrientationAttribute for GridBox {}
+
+#[macro_export]
+macro_rules! grid_box {
+    ($($c:expr),*) => {
+        {
+            use std::ptr;
+            let mut handles = Vec::new();
+            $(
+                // The control has to be stored in a binding to ensure it isn't dropped before
+                // it is added as a child of the container. (Otherwise, the control is destroyed.)
+                let c = $c;
+                handles.push(c.handle());
+            )*
+            handles.push(ptr::null_mut());
+            unsafe { GridBox::from_handles(handles.as_mut_ptr()) }
+        }
+    };
+    ($($c:expr,)*) => { grid_box!($($c),*) };
 }
