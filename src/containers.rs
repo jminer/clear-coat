@@ -36,6 +36,15 @@ pub trait Container : Control {
             }
         }
     }
+
+    /// Returns the number of children of the specified control.
+    ///
+    /// Warning: Since children are stored as a linked list, getting the count is O(n).
+    fn child_count(&self) -> usize {
+        unsafe {
+            IupGetChildCount(self.handle()) as usize
+        }
+    }
 }
 
 pub trait NonDialogContainer : Container {
