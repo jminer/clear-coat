@@ -151,8 +151,8 @@ impl Drop for HandleBox {
 }
 
 // As a future optimization, the implementation could be changed to not use Rc, since support
-// for weak ptrs is not used. Then HandleRc would only be a single indirection instead of two,
-// and would get rid of half the allocations. Probably not worth the time though.
+// for weak ptrs is not used. It would only get rid of one word of memory though. Not worth
+// the time.
 #[derive(Clone)]
 pub struct HandleRc(Rc<HandleBox>);
 
