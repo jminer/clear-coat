@@ -23,7 +23,7 @@ macro_rules! impl_control_traits {
     ($control:ident) => {
         unsafe impl Control for ::$control {
             fn handle(&self) -> *mut Ihandle {
-                assert!(self.0.get() != ptr::null_mut(), "attempted to use destroyed control");
+                assert!(!self.0.get().is_null(), "attempted to use destroyed control");
                 ::check_thread();
                 self.0.get()
             }
@@ -31,7 +31,7 @@ macro_rules! impl_control_traits {
 
         unsafe impl UnwrapHandle for ::$control {
             fn try_unwrap_handle(self) -> Result<*mut Ihandle, Self> {
-                assert!(self.0.get() != ptr::null_mut(), "attempted to use destroyed control");
+                assert!(!self.0.get().is_null(), "attempted to use destroyed control");
                 self.0.try_unwrap().map_err(|handle_rc| ::$control(handle_rc))
             }
         }
