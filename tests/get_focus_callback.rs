@@ -9,8 +9,6 @@
 extern crate clear_coat;
 
 use std::sync::atomic::{AtomicIsize, ATOMIC_ISIZE_INIT, Ordering};
-use std::cell::RefCell;
-use std::rc::Rc;
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
 
