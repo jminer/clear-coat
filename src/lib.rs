@@ -50,7 +50,7 @@ mod handle_rc;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use button::Button;
-pub use containers::{Container, Fill, Hbox, Vbox, GridBox};
+pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event};
 
 // With this layout, you can glob import this module's contents but selectively import the
