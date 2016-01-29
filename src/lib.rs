@@ -46,9 +46,11 @@ mod containers;
 mod attributes;
 mod button;
 mod dialog;
+mod file_dlg;
 mod handle_rc;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
+pub use file_dlg::{FileDlg};
 pub use button::Button;
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event};
