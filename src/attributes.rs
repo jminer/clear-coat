@@ -37,7 +37,7 @@ pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     }
 }
 
-// Unfortunately, the return value has to be copied because its lifetime isn't guarenteed.
+// Unfortunately, the return value has to be copied because its lifetime isn't guaranteed.
 // IUP's docs state:
 //     "The returned pointer can be used safely even if IupGetGlobal or IupGetAttribute are called
 //     several times. But not too many times, because it is an internal buffer and after IUP may
