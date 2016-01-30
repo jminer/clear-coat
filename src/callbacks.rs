@@ -16,6 +16,8 @@ use std::rc::Rc;
 use std::thread::LocalKey;
 use libc::{c_int, c_char};
 use iup_sys::*;
+use smallvec::SmallVec;
+use super::attributes::str_to_c_vec;
 use super::{Control, MouseButton, KeyboardMouseStatus};
 use super::handle_rc::{add_ldestroy_callback, remove_ldestroy_callback};
 
@@ -143,7 +145,8 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
         cbs.push((id, cb));
 
         unsafe {
-            IupSetCallback(ih, self.cb_name.as_ptr() as *const i8, self.cb_fn);
+            let mut buf = SmallVec::<[u8; 32]>::new();
+            IupSetCallback(ih, str_to_c_vec(self.cb_name, &mut buf) as *const i8, self.cb_fn);
         }
 
         Token { id: id, ih: ih }.into()

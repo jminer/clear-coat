@@ -9,6 +9,7 @@ use std::ptr;
 use std::ops::CoerceUnsized;
 use iup_sys::*;
 use libc::{c_char, c_int};
+use smallvec::SmallVec;
 use super::{
     Control,
     UnwrapHandle,
@@ -16,6 +17,7 @@ use super::{
 use super::attributes::{
     CommonAttributes,
     TitleAttribute,
+    str_to_c_vec,
 };
 use super::callbacks::{
     Event,
@@ -48,7 +50,9 @@ impl Button {
     pub fn with_title(title: &str) -> Button {
         unsafe {
             ::iup_open();
-            let ih = IupButton(title.as_ptr() as *const c_char, ptr::null_mut());
+            let mut buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+            let c_title = str_to_c_vec(title, &mut buf);
+            let ih = IupButton(c_title, ptr::null_mut());
             let b = Button(HandleRc::new(ih));
             if cfg!(windows) {
                 b.set_min_size(75, 0);

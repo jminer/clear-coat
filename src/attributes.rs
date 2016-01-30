@@ -9,13 +9,31 @@ use std::borrow::Cow;
 use std::ffi::CStr;
 use libc::{c_char, c_int};
 use iup_sys::*;
+use smallvec::SmallVec;
 use super::Control;
+
+pub fn str_to_c_vec<'a: 'b, 'b, A: ::smallvec::Array<Item=u8>>(s: &'a str, buf: &'b mut SmallVec<A>) -> *const c_char {
+    // `CString` in the std library doesn't check if the &str already ends in a null terminator
+    // It allocates and pushes a 0 unconditionally. However, I can add the null to string literals
+    // and avoid many allocations.
+    if s.as_bytes().last() == Some(&0) && !s.as_bytes()[..s.len() - 1].contains(&b'\0') {
+        s.as_bytes().as_ptr() as *const c_char
+    } else {
+        buf.grow(s.len() + 1);
+        buf.extend(s.as_bytes().iter().map(|c| if *c == b'\0' { b'?' } else { *c }));
+        buf.push(0);
+        (&buf[..]).as_ptr() as *const c_char
+    }
+}
 
 pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     unsafe {
-        IupSetStrAttribute(handle,
-                           name.as_ptr() as *const c_char,
-                           value.as_ptr() as *const c_char);
+        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let c_name = str_to_c_vec(name, &mut name_buf);
+        let mut value_buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+        let c_value = str_to_c_vec(value, &mut value_buf);
+        //println!("setting {:?} to {:?}", CStr::from_ptr(c_name).to_string_lossy(), CStr::from_ptr(c_value).to_string_lossy());
+        IupSetStrAttribute(handle, c_name, c_value);
     }
 }
 
@@ -32,18 +50,23 @@ pub fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
 
 // This function isn't very error prone (see above), but isn't completely safe either.
 pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
-    let value = IupGetAttribute(handle as *mut Ihandle, name.as_ptr() as *const c_char);
+    let mut name_buf = SmallVec::<[u8; 32]>::new();
+    let c_name = str_to_c_vec(name, &mut name_buf);
+    let value = IupGetAttribute(handle as *mut Ihandle, c_name);
+    //println!("getting {:?}: {:?}", name, CStr::from_ptr(value).to_string_lossy());
     CStr::from_ptr(value).to_string_lossy()
 }
 
 pub fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
     unsafe {
+        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let c_name = str_to_c_vec(name, &mut name_buf);
         let mut x: i32 = 0;
         let mut y: i32 = 0;
         assert!(IupGetIntInt(handle as *mut Ihandle,
-                            name.as_ptr() as *const c_char,
-                            &mut x as *mut c_int,
-                            &mut y as *mut c_int) == 2);
+                             c_name,
+                             &mut x as *mut c_int,
+                             &mut y as *mut c_int) == 2);
         (x, y)
     }
 }

@@ -164,7 +164,7 @@ impl HandleRc {
                 hash_map::Entry::Occupied(entry) =>
                     entry.get().upgrade().expect("could not upgrade Weak in handle map"),
                 hash_map::Entry::Vacant(entry) => {
-                    IupSetCallback(ih, "LDESTROY_CB".as_ptr() as *const i8, ldestroy_cb);
+                    IupSetCallback(ih, "LDESTROY_CB\0".as_ptr() as *const i8, ldestroy_cb);
                     let rc = Rc::new(HandleBox(Cell::new(ih)));
                     entry.insert(Rc::downgrade(&rc));
                     rc

@@ -12,6 +12,7 @@
 extern crate libc;
 extern crate iup_sys;
 extern crate kernel32;
+extern crate smallvec;
 
 #[cfg(windows)]
 fn get_thread_id() -> isize {
