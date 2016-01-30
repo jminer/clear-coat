@@ -244,7 +244,7 @@ impl GridBox {
     pub fn num_div(&self) -> NumDiv {
         unsafe {
             let s = get_str_attribute_slice(self.handle(), "NUMDIV");
-            if s.as_bytes() == b"AUTO" {
+            if s.as_bytes() == b"-1" {
                 NumDiv::Auto
             } else {
                 NumDiv::Fixed(s.parse().expect("could not convert NUMDIV to an integer"))
