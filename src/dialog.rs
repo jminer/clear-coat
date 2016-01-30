@@ -27,7 +27,8 @@ use super::callbacks::{
     Token,
     CallbackRegistry,
     MenuCommonCallbacks,
-    NonMenuCommonCallbacks,
+    GetKillFocusCallbacks,
+    EnterLeaveWindowCallbacks,
     with_callbacks,
 };
 use super::containers::Container;
@@ -146,4 +147,5 @@ impl CommonAttributes for Dialog {}
 impl TitleAttribute for Dialog {}
 
 impl MenuCommonCallbacks for Dialog {}
-impl NonMenuCommonCallbacks for Dialog {}
+impl GetKillFocusCallbacks for Dialog {}
+impl EnterLeaveWindowCallbacks for Dialog {}

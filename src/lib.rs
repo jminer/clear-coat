@@ -59,7 +59,7 @@ pub use callbacks::{CallbackAction, Event};
 // above types if you want.
 pub mod common_attrs_cbs {
     pub use attributes::{CommonAttributes, TitleAttribute};
-    pub use callbacks::{MenuCommonCallbacks, NonMenuCommonCallbacks, ButtonCallback};
+    pub use callbacks::{MenuCommonCallbacks, GetKillFocusCallbacks, EnterLeaveWindowCallbacks, ButtonCallback};
 }
 
 use std::ptr;

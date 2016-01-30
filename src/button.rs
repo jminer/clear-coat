@@ -23,7 +23,8 @@ use super::callbacks::{
     CallbackRegistry,
     simple_callback,
     MenuCommonCallbacks,
-    NonMenuCommonCallbacks,
+    GetKillFocusCallbacks,
+    EnterLeaveWindowCallbacks,
     ButtonCallback,
 };
 use super::handle_rc::HandleRc;
@@ -69,7 +70,8 @@ impl CommonAttributes for Button {}
 impl TitleAttribute for Button {}
 
 impl MenuCommonCallbacks for Button {}
-impl NonMenuCommonCallbacks for Button {}
+impl GetKillFocusCallbacks for Button {}
+impl EnterLeaveWindowCallbacks for Button {}
 
 impl ButtonCallback for Button {}
 

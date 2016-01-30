@@ -296,7 +296,7 @@ extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
 }
 
-pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
+pub trait GetKillFocusCallbacks : Control {
     fn get_focus_event<'a>(&'a self) -> Event<'a, FnMut(), GetFocusCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &GET_FOCUS_CALLBACKS)
@@ -306,7 +306,9 @@ pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &KILL_FOCUS_CALLBACKS)
     }
+}
 
+pub trait EnterLeaveWindowCallbacks : Control {
     fn enter_window_event<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &ENTER_WINDOW_CALLBACKS)
@@ -316,7 +318,9 @@ pub trait NonMenuCommonCallbacks : MenuCommonCallbacks {
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &LEAVE_WINDOW_CALLBACKS)
     }
+}
 
+pub trait KAnyCallback : Control {
     // fn k_any_event();
 }
 
