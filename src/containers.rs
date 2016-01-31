@@ -175,6 +175,7 @@ macro_rules! vbox {
 }
 
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum NumDiv {
     Fixed(u32),
     Auto,
