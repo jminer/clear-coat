@@ -205,8 +205,9 @@ impl GridBox {
         }
     }
 
-    pub fn set_alignment_lin(&self, line: u32, alignment: ::VAlignment) {
+    pub fn set_alignment_lin(&self, line: u32, alignment: ::VAlignment) -> &Self {
         set_str_attribute(self.handle(), &format!("ALIGNMENTLIN{}", line), alignment.to_str());
+        self
     }
 
     pub fn alignment_lin_all(&self) -> ::VAlignment {
@@ -216,8 +217,9 @@ impl GridBox {
         }
     }
 
-    pub fn set_alignment_lin_all(&self, alignment: ::VAlignment) {
+    pub fn set_alignment_lin_all(&self, alignment: ::VAlignment) -> &Self {
         set_str_attribute(self.handle(), "ALIGNMENTLIN", alignment.to_str());
+        self
     }
 
     pub fn alignment_col(&self, column: u32) -> ::HAlignment {
@@ -227,8 +229,9 @@ impl GridBox {
         }
     }
 
-    pub fn set_alignment_col(&self, column: u32, alignment: ::HAlignment) {
+    pub fn set_alignment_col(&self, column: u32, alignment: ::HAlignment) -> &Self {
         set_str_attribute(self.handle(), &format!("ALIGNMENTCOL{}", column), alignment.to_str());
+        self
     }
 
     pub fn alignment_col_all(&self) -> ::HAlignment {
@@ -238,8 +241,9 @@ impl GridBox {
         }
     }
 
-    pub fn set_alignment_col_all(&self, alignment: ::HAlignment) {
+    pub fn set_alignment_col_all(&self, alignment: ::HAlignment) -> &Self {
         set_str_attribute(self.handle(), "ALIGNMENTCOL", alignment.to_str());
+        self
     }
 
     pub fn num_div(&self) -> NumDiv {
@@ -253,11 +257,12 @@ impl GridBox {
         }
     }
 
-    pub fn set_num_div(&self, num: NumDiv) {
+    pub fn set_num_div(&self, num: NumDiv) -> &Self {
         match num {
             NumDiv::Fixed(i) => set_str_attribute(self.handle(), "NUMDIV", &i.to_string()),
             NumDiv::Auto => set_str_attribute(self.handle(), "NUMDIV", "AUTO"),
-        }
+        };
+        self
     }
 
     pub fn num_lin(&self) -> u32 {
