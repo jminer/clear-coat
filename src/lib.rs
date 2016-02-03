@@ -124,7 +124,9 @@ pub fn exit_loop() {
 fn iup_open() {
     check_thread();
     unsafe {
-        IupOpen(ptr::null_mut(), ptr::null_mut());
+        if IupOpen(ptr::null_mut(), ptr::null_mut()) == IUP_OPENED {
+            return;
+        }
         attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE", "YES");
         attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE_FILE", "YES");
     }
