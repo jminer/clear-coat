@@ -298,6 +298,30 @@ impl GridBox {
         }
         self
     }
+
+    pub fn size_col(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "SIZECOL\0");
+            s.parse().expect("could not convert SIZECOL to an integer")
+        }
+    }
+
+    pub fn set_size_col(&self, column: u32) -> &Self {
+        set_str_attribute(self.handle(), "SIZECOL\0", &format!("{}\0", column));
+        self
+    }
+
+    pub fn size_lin(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "SIZELIN\0");
+            s.parse().expect("could not convert SIZELIN to an integer")
+        }
+    }
+
+    pub fn set_size_lin(&self, line: u32) -> &Self {
+        set_str_attribute(self.handle(), "SIZELIN\0", &format!("{}\0", line));
+        self
+    }
 }
 
 impl_control_traits!(GridBox);
