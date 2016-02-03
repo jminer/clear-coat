@@ -278,6 +278,26 @@ impl GridBox {
             s.parse().expect("could not convert NUMLIN to an integer")
         }
     }
+
+    pub fn fit_col_to_children(&self, column: u32) -> &Self {
+        set_str_attribute(self.handle(), "FITTOCHILDREN\0", &format!("C{}\0", column));
+        self
+    }
+
+    pub fn fit_lin_to_children(&self, line: u32) -> &Self {
+        set_str_attribute(self.handle(), "FITTOCHILDREN\0", &format!("L{}\0", line));
+        self
+    }
+
+    pub fn fit_all_to_children(&self) -> &Self {
+        for line in 0..self.num_lin() {
+            self.fit_lin_to_children(line);
+        }
+        for column in 0..self.num_col() {
+            self.fit_col_to_children(column);
+        }
+        self
+    }
 }
 
 impl_control_traits!(GridBox);
