@@ -60,7 +60,13 @@ pub fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
 pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
     let value = get_attribute_ptr(handle, name);
     //println!("getting {:?}: {:?}", name, CStr::from_ptr(value).to_string_lossy());
-    CStr::from_ptr(value).to_string_lossy()
+    // It may be better to return `None` when `value` is null rather than an empty string,
+    // but I'll try this for now.
+    if value.is_null() {
+        "".into()
+    } else {
+        CStr::from_ptr(value).to_string_lossy()
+    }
 }
 
 pub fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
