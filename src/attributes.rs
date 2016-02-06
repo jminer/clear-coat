@@ -37,6 +37,14 @@ pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     }
 }
 
+pub fn get_attribute_ptr(handle: *mut Ihandle, name: &str) -> *mut c_char {
+    unsafe {
+        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let c_name = str_to_c_vec(name, &mut name_buf);
+        IupGetAttribute(handle as *mut Ihandle, c_name)
+    }
+}
+
 // Unfortunately, the return value has to be copied because its lifetime isn't guaranteed.
 // IUP's docs state:
 //     "The returned pointer can be used safely even if IupGetGlobal or IupGetAttribute are called
@@ -50,9 +58,7 @@ pub fn get_str_attribute(handle: *mut Ihandle, name: &str) -> String {
 
 // This function isn't very error prone (see above), but isn't completely safe either.
 pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<str> {
-    let mut name_buf = SmallVec::<[u8; 32]>::new();
-    let c_name = str_to_c_vec(name, &mut name_buf);
-    let value = IupGetAttribute(handle as *mut Ihandle, c_name);
+    let value = get_attribute_ptr(handle, name);
     //println!("getting {:?}: {:?}", name, CStr::from_ptr(value).to_string_lossy());
     CStr::from_ptr(value).to_string_lossy()
 }
