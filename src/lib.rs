@@ -52,7 +52,7 @@ mod file_dlg;
 mod handle_rc;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
-pub use file_dlg::{FileDlg};
+pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
 pub use label::Label;
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
