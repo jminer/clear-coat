@@ -6,6 +6,8 @@
  */
 
 use std::borrow::Cow;
+use std::ffi::CStr;
+use std::path::{PathBuf, Path};
 use iup_sys::*;
 use super::{
     Control,
@@ -15,6 +17,7 @@ use super::{
 };
 use super::attributes::{
     TitleAttribute,
+    get_attribute_ptr,
     get_str_attribute,
     get_str_attribute_slice,
     set_str_attribute,
@@ -143,6 +146,53 @@ impl FileDlg {
             s
         });
         set_str_attribute(self.handle(), "EXTFILTER", &s);
+    }
+
+    pub fn multiple_files(&self) -> bool {
+        unsafe {
+            get_str_attribute_slice(self.handle(), "MULTIPLEFILES\0") == "YES"
+        }
+    }
+
+    pub fn set_multiple_files(&self, multiple: bool) -> &Self {
+        set_str_attribute(self.handle(), "MULTIPLEFILES\0", if multiple { "YES\0" } else { "NO\0" });
+        self
+    }
+
+    pub fn value_single(&self) -> Option<PathBuf> {
+        assert!(!self.multiple_files());
+        unsafe {
+            let val = get_attribute_ptr(self.handle(), "VALUE\0");
+            if val.is_null() {
+                None
+            } else {
+                Some(PathBuf::from(&*CStr::from_ptr(val).to_string_lossy()))
+            }
+        }
+    }
+
+    pub fn value_multiple(&self) -> Option<Vec<PathBuf>> {
+        assert!(self.multiple_files());
+        unsafe {
+            let val = get_attribute_ptr(self.handle(), "VALUE\0");
+            if val.is_null() {
+                None
+            } else {
+                const PIPE: &'static [char] = &['|'];
+                let val = CStr::from_ptr(val).to_string_lossy();
+                let mut parts = val.split(PIPE);
+                let last_part = parts.next_back().expect("failed removing last part");
+                // if multiple files were selected, the string will end in a pipe
+                if last_part.is_empty() {
+                    let dir = parts.next().expect("failed to get directory in value in \
+                                                FileDlg when multiple_files == true");
+                    Some(parts.map(|p| Path::new(dir).join(p)).collect())
+                } else {
+                    assert_eq!(parts.next(), None);
+                    Some(vec![PathBuf::from(last_part)])
+                }
+            }
+        }
     }
 }
 

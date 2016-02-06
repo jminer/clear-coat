@@ -17,3 +17,5 @@ Cargo will run tests in multiple threads, even if you run `cargo test -j 1`. Pas
 ## IUP Behavior
 
 IUP stores children as a singly-linked list starting with the first child. Iterating over them using `IupGetNextChild` and `IupGetBrother` is by far the fastest way (always O(n)). It is best to not use `IupGetChild`, as it is O(n), even though the docs don't mention it.
+
+Unfortunately, IUP doesn't handle non-UTF-8 file paths as well as Rust. If `UTF8MODE_FILE` is off, then on Windows, it will convert paths to the current code page (ugh). UTF-8 is great compared to that. If I could get a `WCHAR` string, then I could build an `OsString` from it, but that doesn't seem possible. Therefore, if there's a file path that can't be converted to UTF-8, IUP will prevent us from getting a path to it.
