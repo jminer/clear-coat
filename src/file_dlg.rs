@@ -50,15 +50,6 @@ impl FileDialogType {
     }
 }
 
-/*
-set_ext_filter(&[
-    FileExtFilter::from_borrowed("JPEG Images",
-                                 ["*.jpg".into(), "*.jpeg".into()]),
-    FileExtFilter::from_borrowed("JPEG Images",
-                                 ["*.jpg".into(), "*.jpeg".into()]),
-])
-
- */
 pub struct FileExtFilter<'a, 'b, 'c: 'b> {
     pub description: Cow<'a, str>,
     pub filter: Cow<'b, [Cow<'c, str>]>,
@@ -135,17 +126,53 @@ impl FileDlg {
         }
     }
 
+    /// Sets file filters. It is recommended to always include an "All Files" filter.
+    ///
+    /// # Examples
+    /// ```
+    /// # use clear_coat::{FileDlg, FileExtFilter};
+    /// let f = FileDlg::new();
+    /// f.set_ext_filter(&[
+    ///     FileExtFilter::from_borrowed("All Files",
+    ///                                  &["*.*".into()]),
+    ///     FileExtFilter::from_borrowed("All Images",
+    ///                                  &["*.jpg".into(), "*.jpeg".into(), "*.png".into()]),
+    ///     FileExtFilter::from_borrowed("JPEG Images",
+    ///                                  &["*.jpg".into(), "*.jpeg".into()]),
+    ///     FileExtFilter::from_borrowed("PNG Images",
+    ///                                  &["*.png".into()]),
+    /// ]);
+    /// f.set_filter_used(1);
+    /// ```
     pub fn set_ext_filter(&self, ext_filter: &[FileExtFilter]) {
-        let s = ext_filter.iter().map(|f|
-            format!("{}|{}", f.description, f.filter.join(";"))
-        ).fold(String::new(), |mut s, f| {
-            if s.is_empty() {
-                s.push('|');
-            }
-            s.push_str(&f);
-            s
-        });
-        set_str_attribute(self.handle(), "EXTFILTER", &s);
+        let mut s = String::with_capacity(ext_filter.len() * 25);
+        for f in ext_filter.iter() {
+            let semi_joined_filter = f.filter.join(";");
+            s.push_str(&f.description);
+            s.push_str(" (");
+            s.push_str(&semi_joined_filter);
+            s.push_str(")");
+            s.push_str("|");
+
+            s.push_str(&semi_joined_filter);
+            s.push_str("|");
+        }
+        s.push_str("\0");
+        set_str_attribute(self.handle(), "EXTFILTER\0", &s);
+    }
+
+    /// Sets the index of the filter to use starting at 0.
+    pub fn set_filter_used(&self, i: u32) -> &Self {
+        set_str_attribute(self.handle(), "FILTERUSED\0", &format!("{}\0", i + 1));
+        self
+    }
+
+    /// Gets the index of the filter to use. It returns the selection made by the user.
+    pub fn filter_used(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "FILTERUSED\0");
+            s.parse::<u32>().expect("could not convert FILTERUSED to an integer") - 1
+        }
     }
 
     pub fn multiple_files(&self) -> bool {
