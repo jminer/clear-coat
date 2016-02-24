@@ -122,6 +122,16 @@ pub fn exit_loop() {
     }
 }
 
+pub fn lock_loop() -> bool {
+    unsafe {
+        attributes::get_str_attribute_slice(ptr::null_mut(), "LOCKLOOP\0") == "YES"
+    }
+}
+
+pub fn set_lock_loop(lock: bool) {
+    attributes::set_str_attribute(ptr::null_mut(), "LOCKLOOP\0", if lock { "YES\0" } else { "NO\0" });
+}
+
 
 fn iup_open() {
     check_thread();
