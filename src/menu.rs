@@ -16,6 +16,10 @@ use super::{
 use super::attributes::{
     str_to_c_vec,
 };
+use super::containers::{
+    Container,
+    wrapper_to_handle_vec,
+};
 use super::handle_rc::HandleRc;
 
 /// Implemented by controls that can be added as children of a `Menu`.
@@ -31,13 +35,28 @@ impl Menu {
             ::iup_open();
             // You can pass NULL for the array, even though the docs don't explicitly mention it.
             // (They only say to use NULL as the last element of the array.)
-            let ih = IupMenuv(ptr::null_mut());
-            Menu(HandleRc::new(ih))
+            let handle = IupMenuv(ptr::null_mut());
+            Menu(HandleRc::new(handle))
         }
+    }
+
+    pub fn with_children(children: &[&MenuSubitem]) -> Self {
+        unsafe {
+            // got to already be IupOpen()ed
+            let mut handles = wrapper_to_handle_vec(children);
+            Menu::from_handles(handles.as_mut_ptr())
+        }
+    }
+
+    pub unsafe fn from_handles(children: *mut *mut Ihandle) -> Self {
+        let handle = IupMenuv(children);
+        Menu(HandleRc::new(handle))
     }
 }
 
 impl_control_traits!(Menu);
+
+impl Container for Menu {}
 
 
 

@@ -56,7 +56,7 @@ pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
 pub use label::Label;
-pub use menu::{Menu, Item, Separator, Submenu};
+pub use menu::{Menu, MenuSubitem, Item, Separator, Submenu};
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event};
 

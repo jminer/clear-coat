@@ -56,7 +56,7 @@ pub trait NonDialogContainer : Container {
 }
 
 
-fn wrapper_to_handle_vec(controls: &[&::Control]) -> Vec<*mut Ihandle>
+pub fn wrapper_to_handle_vec<T: ::Control + ?Sized>(controls: &[&T]) -> Vec<*mut Ihandle>
 {
     let mut v: Vec<*mut Ihandle> = controls.iter().map(|c| c.handle()).collect();
     v.push(ptr::null_mut()); // array has to be null terminated
