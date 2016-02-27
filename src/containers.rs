@@ -56,17 +56,11 @@ pub trait NonDialogContainer : Container {
 }
 
 
-// Be sure that the Vec is not dropped before the *mut *mut Ihandle is used.
-fn wrapper_to_handles(controls: Option<&[&::Control]>)
--> (Option<Vec<*mut Ihandle>>, *mut *mut Ihandle)
+fn wrapper_to_handle_vec(controls: &[&::Control]) -> Vec<*mut Ihandle>
 {
-    let mut controls: Option<Vec<_>> = controls.map(|slice| {
-        let mut v: Vec<*mut Ihandle> = slice.iter().map(|c| c.handle()).collect();
-        v.push(ptr::null_mut()); // array has to be null terminated
-        v
-    });
-    let p = controls.as_mut().map(|v| v.as_mut_ptr()).unwrap_or(ptr::null_mut());
-    (controls, p)
+    let mut v: Vec<*mut Ihandle> = controls.iter().map(|c| c.handle()).collect();
+    v.push(ptr::null_mut()); // array has to be null terminated
+    v
 }
 
 
@@ -95,11 +89,19 @@ macro_rules! fill { // This is a macro for consistency, even though it could jus
 pub struct Hbox(HandleRc);
 
 impl Hbox {
-    pub fn new(children: Option<&[&::Control]>) -> Hbox {
+    pub fn new() -> Self {
         unsafe {
             ::iup_open();
-            let (_children, children_handles) = wrapper_to_handles(children);
-            Hbox::from_handles(children_handles)
+            let handle = IupHboxv(ptr::null_mut());
+            Hbox(HandleRc::new(handle))
+        }
+    }
+
+    pub fn with_children(children: &[&::Control]) -> Self {
+        unsafe {
+            // got to already be IupOpen()ed
+            let mut handles = wrapper_to_handle_vec(children);
+            Hbox::from_handles(handles.as_mut_ptr())
         }
     }
 
@@ -137,11 +139,19 @@ macro_rules! hbox {
 pub struct Vbox(HandleRc);
 
 impl Vbox {
-    pub fn new(children: Option<&[&::Control]>) -> Vbox {
+    pub fn new() -> Self {
         unsafe {
             ::iup_open();
-            let (_children, children_handles) = wrapper_to_handles(children);
-            Vbox::from_handles(children_handles)
+            let handle = IupVboxv(ptr::null_mut());
+            Vbox(HandleRc::new(handle))
+        }
+    }
+
+    pub fn with_children(children: &[&::Control]) -> Self {
+        unsafe {
+            // got to already be IupOpen()ed
+            let mut handles = wrapper_to_handle_vec(children);
+            Vbox::from_handles(handles.as_mut_ptr())
         }
     }
 
@@ -185,11 +195,19 @@ pub enum NumDiv {
 pub struct GridBox(HandleRc);
 
 impl GridBox {
-    pub fn new(children: Option<&[&::Control]>) -> GridBox {
+    pub fn new() -> Self {
         unsafe {
             ::iup_open();
-            let (_children, children_handles) = wrapper_to_handles(children);
-            GridBox::from_handles(children_handles)
+            let handle = IupGridBoxv(ptr::null_mut());
+            GridBox(HandleRc::new(handle))
+        }
+    }
+
+    pub fn with_children(children: &[&::Control]) -> Self {
+        unsafe {
+            // got to already be IupOpen()ed
+            let mut handles = wrapper_to_handle_vec(children);
+            GridBox::from_handles(handles.as_mut_ptr())
         }
     }
 
