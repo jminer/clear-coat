@@ -124,12 +124,18 @@ pub fn exit_loop() {
     }
 }
 
+/// If this setting is set to false and the last visible dialog is closed, the `exit_loop`
+/// function is called.
+///
+/// To avoid `exit_loop` being called, call `set_lock_loop(true)` before hiding the last dialog.
+/// The default is false.
 pub fn lock_loop() -> bool {
     unsafe {
         attributes::get_str_attribute_slice(ptr::null_mut(), "LOCKLOOP\0") == "YES"
     }
 }
 
+/// See `lock_loop`
 pub fn set_lock_loop(lock: bool) {
     attributes::set_str_attribute(ptr::null_mut(), "LOCKLOOP\0", if lock { "YES\0" } else { "NO\0" });
 }
