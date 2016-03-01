@@ -256,10 +256,23 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
 
 
 
+callback_token!(DestroyCallbackToken);
+thread_local!(
+    static DESTROY_CALLBACKS: CallbackRegistry<FnMut(), DestroyCallbackToken> =
+        CallbackRegistry::new("DESTROY_CB", destroy_cb)
+);
+extern fn destroy_cb(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &DESTROY_CALLBACKS)
+}
+
 pub trait MenuCommonCallbacks : Control {
     // fn map_event();
     // fn unmap_event();
-    // fn destroy_event();
+
+    fn destroy_event<'a>(&'a self) -> Event<'a, FnMut(), DestroyCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &Control, &DESTROY_CALLBACKS)
+    }
 }
 
 
