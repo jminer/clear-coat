@@ -16,6 +16,9 @@ use super::{
 use super::attributes::{
     str_to_c_vec,
 };
+use super::callbacks::{
+    MenuCommonCallbacks,
+};
 use super::containers::{
     Container,
     wrapper_to_handle_vec,
@@ -57,6 +60,8 @@ impl Menu {
 impl_control_traits!(Menu);
 
 impl Container for Menu {}
+
+impl MenuCommonCallbacks for Menu {}
 
 
 

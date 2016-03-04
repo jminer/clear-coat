@@ -37,6 +37,13 @@ pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     }
 }
 
+// This function is unsafe because the caller is required to pass a valid pointer for `value`.
+pub unsafe fn set_attribute_handle(ih: *mut Ihandle, name: &str, value: *mut Ihandle) {
+    let mut name_buf = SmallVec::<[u8; 32]>::new();
+    let c_name = str_to_c_vec(name, &mut name_buf);
+    IupSetAttributeHandle(ih, c_name, value);
+}
+
 pub fn get_attribute_ptr(handle: *mut Ihandle, name: &str) -> *mut c_char {
     unsafe {
         let mut name_buf = SmallVec::<[u8; 32]>::new();
@@ -66,6 +73,14 @@ pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<s
         "".into()
     } else {
         CStr::from_ptr(value).to_string_lossy()
+    }
+}
+
+pub fn get_attribute_handle(ih: *mut Ihandle, name: &str) -> *mut Ihandle {
+    unsafe {
+        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let c_name = str_to_c_vec(name, &mut name_buf);
+        IupGetAttributeHandle(ih, c_name)
     }
 }
 

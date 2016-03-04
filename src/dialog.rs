@@ -15,11 +15,14 @@ use super::{
     Control,
     UnwrapHandle,
     ScreenPosition,
+    Menu,
     Popup,
 };
 use super::attributes::{
     CommonAttributes,
     TitleAttribute,
+    set_attribute_handle,
+    get_attribute_handle,
 };
 use super::callbacks::{
     CallbackAction,
@@ -77,6 +80,26 @@ impl Dialog {
     pub fn refresh(&self) {
         unsafe {
             IupRefresh(self.handle());
+        }
+    }
+
+    pub fn set_menu(&self, menu: &Menu) {
+        unsafe {
+            let old_menu_ih = get_attribute_handle(self.handle(), "MENU\0");
+            // Create a HandleRc reference. It will destroy the control when it is dropped if
+            // there are no other references to the menu.
+            let old_menu = if !old_menu_ih.is_null() {
+                IupDetach(old_menu_ih);
+                Some(HandleRc::new(old_menu_ih))
+            } else {
+                None
+            };
+            set_attribute_handle(self.handle(), "MENU\0", menu.handle());
+            // This is kind of a hack. Without this line, the menu would not be set as a child
+            // of the dialog until the dialog is mapped.
+            // (The menu's parent is set in iDialogSetMenuAttrib() in IUP.)
+            IupAppend(self.handle(), menu.handle());
+            drop(old_menu);
         }
     }
 
