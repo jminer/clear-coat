@@ -7,7 +7,9 @@
 
 
 use std::ptr;
+use std::ops::CoerceUnsized;
 use iup_sys::*;
+use libc::c_int;
 use smallvec::SmallVec;
 use super::{
     Control,
@@ -17,6 +19,10 @@ use super::attributes::{
     str_to_c_vec,
 };
 use super::callbacks::{
+    Event,
+    Token,
+    CallbackRegistry,
+    simple_callback,
     MenuCommonCallbacks,
 };
 use super::containers::{
@@ -90,8 +96,7 @@ impl Submenu {
 
 impl_control_traits!(Submenu);
 
-impl MenuSubitem for Submenu {
-}
+impl MenuSubitem for Submenu {}
 
 
 
@@ -116,11 +121,25 @@ impl Item {
             Item(HandleRc::new(ih))
         }
     }
+
+    pub fn action_event<'a>(&'a self) -> Event<'a, FnMut(), ItemActionCallbackToken>
+    where &'a Self: CoerceUnsized<&'a Control> {
+        Event::new(self as &'a Control, &ITEM_ACTION_CALLBACKS)
+    }
 }
 
 impl_control_traits!(Item);
 
-impl MenuSubitem for Item {
+impl MenuSubitem for Item {}
+
+
+callback_token!(ItemActionCallbackToken);
+thread_local!(
+    static ITEM_ACTION_CALLBACKS: CallbackRegistry<FnMut(), ItemActionCallbackToken> =
+        CallbackRegistry::new("ACTION", item_action_cb)
+);
+extern fn item_action_cb(ih: *mut Ihandle) -> c_int {
+    simple_callback(ih, &ITEM_ACTION_CALLBACKS)
 }
 
 
@@ -140,5 +159,4 @@ impl Separator {
 
 impl_control_traits!(Separator);
 
-impl MenuSubitem for Separator {
-}
+impl MenuSubitem for Separator {}
