@@ -63,7 +63,13 @@ pub use callbacks::{CallbackAction, Event};
 // With this layout, you can glob import this module's contents but selectively import the
 // above types if you want.
 pub mod common_attrs_cbs {
-    pub use attributes::{CommonAttributes, TitleAttribute};
+    pub use attributes::{
+        ActiveAttribute,
+        MinMaxSizeAttribute,
+        TipAttribute,
+        TitleAttribute,
+        VisibleAttribute,
+    };
     pub use callbacks::{MenuCommonCallbacks, GetKillFocusCallbacks, EnterLeaveWindowCallbacks, ButtonCallback};
 }
 

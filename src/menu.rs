@@ -16,6 +16,8 @@ use super::{
     UnwrapHandle,
 };
 use super::attributes::{
+    ActiveAttribute,
+    TitleAttribute,
     str_to_c_vec,
 };
 use super::callbacks::{
@@ -131,6 +133,9 @@ impl Item {
 impl_control_traits!(Item);
 
 impl MenuSubitem for Item {}
+
+impl ActiveAttribute for Item {}
+impl TitleAttribute for Item {}
 
 
 callback_token!(ItemActionCallbackToken);

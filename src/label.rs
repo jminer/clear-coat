@@ -14,8 +14,11 @@ use super::{
     UnwrapHandle,
 };
 use super::attributes::{
-    CommonAttributes,
+    ActiveAttribute,
+    MinMaxSizeAttribute,
+    TipAttribute,
     TitleAttribute,
+    VisibleAttribute,
     str_to_c_vec,
     set_str_attribute,
     get_str_attribute_slice,
@@ -64,9 +67,11 @@ impl Label {
 
 impl_control_traits!(Label);
 
-impl CommonAttributes for Label {}
-
+impl ActiveAttribute for Label {}
+impl MinMaxSizeAttribute for Label {}
+impl TipAttribute for Label {}
 impl TitleAttribute for Label {}
+impl VisibleAttribute for Label {}
 
 impl MenuCommonCallbacks for Label {}
 

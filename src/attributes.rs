@@ -99,7 +99,7 @@ pub fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
 }
 
 
-pub trait CommonAttributes : Control {
+pub trait ActiveAttribute : Control {
     fn active(&self) -> bool {
         get_str_attribute(self.handle(), "ACTIVE") == "YES"
     }
@@ -107,18 +107,9 @@ pub trait CommonAttributes : Control {
     fn set_active(&self, active: bool) {
         set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
     }
+}
 
-    fn tip(&self) -> String {
-        get_str_attribute(self.handle(), "TIP")
-    }
-    unsafe fn tip_slice(&self) -> Cow<str> {
-        get_str_attribute_slice(self.handle(), "TIP")
-    }
-
-    fn set_tip(&self, tip: &str) {
-        set_str_attribute(self.handle(), "TIP", tip);
-    }
-
+pub trait MinMaxSizeAttribute : Control {
     fn min_size(&self) -> (i32, i32) {
         get_int_int_attribute(self.handle(), "MINSIZE")
     }
@@ -136,7 +127,45 @@ pub trait CommonAttributes : Control {
         let s = format!("{}x{}", x, y);
         set_str_attribute(self.handle(), "MAXSIZE", &s);
     }
+}
 
+pub trait OrientationAttribute : Control {
+    fn orientation(&self) -> ::Orientation {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "ORIENTATION");
+            ::Orientation::from_str(s.as_bytes())
+        }
+    }
+
+    fn set_orientation(&self, orientation: ::Orientation) {
+        set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
+    }
+}
+
+pub trait TipAttribute : Control {
+    fn tip(&self) -> String {
+        get_str_attribute(self.handle(), "TIP")
+    }
+    unsafe fn tip_slice(&self) -> Cow<str> {
+        get_str_attribute_slice(self.handle(), "TIP")
+    }
+
+    fn set_tip(&self, tip: &str) {
+        set_str_attribute(self.handle(), "TIP", tip);
+    }
+}
+
+pub trait TitleAttribute : Control {
+    fn title(&self) -> String {
+        get_str_attribute(self.handle(), "TITLE")
+    }
+
+    fn set_title(&self, title: &str) {
+        set_str_attribute(self.handle(), "TITLE", title);
+    }
+}
+
+pub trait VisibleAttribute : Control {
     fn show(&self) -> Result<(), ()> {
         unsafe {
             if IupShow(self.handle()) == IUP_NOERROR {
@@ -157,30 +186,13 @@ pub trait CommonAttributes : Control {
         }
     }
 
-    fn set_visible(&self, visible: bool) -> Result<(), ()> {
-        if visible { self.show() } else { self.hide() }
-    }
-}
-
-pub trait TitleAttribute : Control {
-    fn title(&self) -> String {
-        get_str_attribute(self.handle(), "TITLE")
-    }
-
-    fn set_title(&self, title: &str) {
-        set_str_attribute(self.handle(), "TITLE", title);
-    }
-}
-
-pub trait OrientationAttribute : Control {
-    fn orientation(&self) -> ::Orientation {
+    fn visible(&self) -> bool {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "ORIENTATION");
-            ::Orientation::from_str(s.as_bytes())
+            get_str_attribute_slice(self.handle(), "VISIBLE\0") == "YES"
         }
     }
 
-    fn set_orientation(&self, orientation: ::Orientation) {
-        set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
+    fn set_visible(&self, visible: bool) -> Result<(), ()> {
+        if visible { self.show() } else { self.hide() }
     }
 }

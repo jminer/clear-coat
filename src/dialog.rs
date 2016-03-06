@@ -19,8 +19,11 @@ use super::{
     Popup,
 };
 use super::attributes::{
-    CommonAttributes,
+    ActiveAttribute,
+    MinMaxSizeAttribute,
+    TipAttribute,
     TitleAttribute,
+    VisibleAttribute,
     set_attribute_handle,
     get_attribute_handle,
 };
@@ -166,8 +169,11 @@ impl_control_traits!(Dialog);
 impl Container for Dialog {}
 impl Popup for Dialog {}
 
-impl CommonAttributes for Dialog {}
+impl ActiveAttribute for Dialog {}
+impl MinMaxSizeAttribute for Dialog {}
+impl TipAttribute for Dialog {}
 impl TitleAttribute for Dialog {}
+impl VisibleAttribute for Dialog {}
 
 impl MenuCommonCallbacks for Dialog {}
 impl GetKillFocusCallbacks for Dialog {}

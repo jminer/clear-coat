@@ -15,8 +15,11 @@ use super::{
     UnwrapHandle,
 };
 use super::attributes::{
-    CommonAttributes,
+    ActiveAttribute,
+    MinMaxSizeAttribute,
+    TipAttribute,
     TitleAttribute,
+    VisibleAttribute,
     str_to_c_vec,
 };
 use super::callbacks::{
@@ -69,9 +72,11 @@ impl Button {
 
 impl_control_traits!(Button);
 
-impl CommonAttributes for Button {}
-
+impl ActiveAttribute for Button {}
+impl MinMaxSizeAttribute for Button {}
+impl TipAttribute for Button {}
 impl TitleAttribute for Button {}
+impl VisibleAttribute for Button {}
 
 impl MenuCommonCallbacks for Button {}
 impl GetKillFocusCallbacks for Button {}
