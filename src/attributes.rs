@@ -28,9 +28,9 @@ pub fn str_to_c_vec<'a: 'b, 'b, A: ::smallvec::Array<Item=u8>>(s: &'a str, buf: 
 
 pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     unsafe {
-        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let mut name_buf = SmallVec::<[u8; 64]>::new();
         let c_name = str_to_c_vec(name, &mut name_buf);
-        let mut value_buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+        let mut value_buf = SmallVec::<[u8; 64]>::new();
         let c_value = str_to_c_vec(value, &mut value_buf);
         //println!("setting {:?} to {:?}", CStr::from_ptr(c_name).to_string_lossy(), CStr::from_ptr(c_value).to_string_lossy());
         IupSetStrAttribute(handle, c_name, c_value);
@@ -39,14 +39,14 @@ pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
 
 // This function is unsafe because the caller is required to pass a valid pointer for `value`.
 pub unsafe fn set_attribute_handle(ih: *mut Ihandle, name: &str, value: *mut Ihandle) {
-    let mut name_buf = SmallVec::<[u8; 32]>::new();
+    let mut name_buf = SmallVec::<[u8; 64]>::new();
     let c_name = str_to_c_vec(name, &mut name_buf);
     IupSetAttributeHandle(ih, c_name, value);
 }
 
 pub fn get_attribute_ptr(handle: *mut Ihandle, name: &str) -> *mut c_char {
     unsafe {
-        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let mut name_buf = SmallVec::<[u8; 64]>::new();
         let c_name = str_to_c_vec(name, &mut name_buf);
         IupGetAttribute(handle as *mut Ihandle, c_name)
     }
@@ -78,7 +78,7 @@ pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<s
 
 pub fn get_attribute_handle(ih: *mut Ihandle, name: &str) -> *mut Ihandle {
     unsafe {
-        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let mut name_buf = SmallVec::<[u8; 64]>::new();
         let c_name = str_to_c_vec(name, &mut name_buf);
         IupGetAttributeHandle(ih, c_name)
     }
@@ -86,7 +86,7 @@ pub fn get_attribute_handle(ih: *mut Ihandle, name: &str) -> *mut Ihandle {
 
 pub fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
     unsafe {
-        let mut name_buf = SmallVec::<[u8; 32]>::new();
+        let mut name_buf = SmallVec::<[u8; 64]>::new();
         let c_name = str_to_c_vec(name, &mut name_buf);
         let mut x: i32 = 0;
         let mut y: i32 = 0;

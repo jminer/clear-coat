@@ -145,7 +145,7 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
         cbs.push((id, cb));
 
         unsafe {
-            let mut buf = SmallVec::<[u8; 32]>::new();
+            let mut buf = SmallVec::<[u8; 64]>::new();
             IupSetCallback(ih, str_to_c_vec(self.cb_name, &mut buf) as *const i8, self.cb_fn);
         }
 

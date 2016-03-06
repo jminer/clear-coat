@@ -88,7 +88,7 @@ impl Submenu {
     pub fn with_title_and_menu(title: &str, menu: &Menu) -> Self {
         unsafe {
             ::iup_open();
-            let mut buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+            let mut buf = SmallVec::<[u8; 64]>::new();
             let c_title = str_to_c_vec(title, &mut buf);
             let ih = IupSubmenu(c_title, menu.handle());
             Submenu(HandleRc::new(ih))
@@ -117,7 +117,7 @@ impl Item {
     pub fn with_title(title: &str) -> Self {
         unsafe {
             ::iup_open();
-            let mut buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+            let mut buf = SmallVec::<[u8; 64]>::new();
             let c_title = str_to_c_vec(title, &mut buf);
             let ih = IupItem(c_title, ptr::null_mut());
             Item(HandleRc::new(ih))

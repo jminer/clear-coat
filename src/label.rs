@@ -45,7 +45,7 @@ impl Label {
     pub fn with_title(title: &str) -> Self {
         unsafe {
             ::iup_open();
-            let mut buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+            let mut buf = SmallVec::<[u8; 64]>::new();
             let c_title = str_to_c_vec(title, &mut buf);
             let ih = IupLabel(c_title);
             Label(HandleRc::new(ih))

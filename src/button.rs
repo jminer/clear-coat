@@ -53,7 +53,7 @@ impl Button {
     pub fn with_title(title: &str) -> Button {
         unsafe {
             ::iup_open();
-            let mut buf = SmallVec::<[u8; 32]>::new(); // TODO: change to 64 after upgrading smallvec
+            let mut buf = SmallVec::<[u8; 64]>::new();
             let c_title = str_to_c_vec(title, &mut buf);
             let ih = IupButton(c_title, ptr::null_mut());
             let b = Button(HandleRc::new(ih));
