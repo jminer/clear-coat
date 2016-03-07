@@ -118,6 +118,13 @@ pub fn main_loop() {
     }
 }
 
+/// Returns the current cascade level of `main_loop`.
+///
+/// When no calls were done, return value is 0. Each time `main_loop` is called, the level
+/// increases by one, and each time `main_loop` returns, the level decreases by one. You can use
+/// this function to check if `main_loop` was already called and avoid calling it again.
+///
+/// A call to `Popup::popup` will increase the level by one.
 pub fn main_loop_level() -> i32 {
     unsafe {
         IupMainLoopLevel()
