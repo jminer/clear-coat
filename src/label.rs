@@ -26,7 +26,6 @@ use super::attributes::{
 use super::callbacks::{
     MenuCommonCallbacks,
     EnterLeaveWindowCallbacks,
-    ButtonCallback,
 };
 use super::handle_rc::HandleRc;
 
@@ -76,5 +75,3 @@ impl VisibleAttribute for Label {}
 impl MenuCommonCallbacks for Label {}
 
 impl EnterLeaveWindowCallbacks for Label {}
-
-impl ButtonCallback for Label {}
