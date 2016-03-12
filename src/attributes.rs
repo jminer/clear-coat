@@ -44,6 +44,12 @@ pub unsafe fn set_attribute_handle(ih: *mut Ihandle, name: &str, value: *mut Iha
     IupSetAttributeHandle(ih, c_name, value);
 }
 
+pub unsafe fn reset_attribute(ih: *mut Ihandle, name: &str) {
+    let mut name_buf = SmallVec::<[u8; 64]>::new();
+    let c_name = str_to_c_vec(name, &mut name_buf);
+    IupResetAttribute(ih, c_name);
+}
+
 pub fn get_attribute_ptr(handle: *mut Ihandle, name: &str) -> *mut c_char {
     unsafe {
         let mut name_buf = SmallVec::<[u8; 64]>::new();

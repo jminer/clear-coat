@@ -127,6 +127,7 @@ pub fn handle_rc_destroy_cb(ih: *mut Ihandle) {
 /// they all refer to the same `HandleBox`. Since there will always be at most one `HandleBox` for
 /// a certain `*mut Ihandle`, then when the `HandleBox` is dropped, there are no more references
 /// from the wrapper to the `*mut Ihandle`.
+#[derive(Debug)]
 struct HandleBox(Cell<*mut Ihandle>);
 
 impl Deref for HandleBox {
@@ -157,7 +158,7 @@ impl Drop for HandleBox {
 // As a future optimization, the implementation could be changed to not use Rc, since support
 // for weak ptrs is not used. It would only get rid of one word of memory though. Not worth
 // the time.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct HandleRc(Rc<HandleBox>);
 
 impl HandleRc {

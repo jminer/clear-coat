@@ -51,6 +51,7 @@ mod menu;
 mod dialog;
 mod file_dlg;
 mod handle_rc;
+mod extra_refs;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};

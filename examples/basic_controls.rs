@@ -7,6 +7,9 @@
 
 #[macro_use]
 extern crate clear_coat;
+extern crate iup_sys;
+use iup_sys::*;
+use std::ptr;
 
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
@@ -22,12 +25,31 @@ fn main() {
     let button4 = Button::new();
     button4.set_title("Hi");
 
+    let new_item = Item::with_title("New");
+    let open_item = Item::with_title("Open");
+    let file_menu = Menu::with_children(&[
+        &new_item,
+        &open_item,
+    ]);
+
     // TODO: there is handle::is_null()
     // TODO: have setters return self, so that hbox and vbox, etc. can be configured without being stored in a variable?
     let dialog = Dialog::with_child(&vbox!(
         button1, fill!(),
         hbox!(fill!(), button3, button4),
         button2));
+    // unsafe {
+    //     let mut subsubmenu = vec![IupItem("Foo\0".as_ptr() as *const i8, ptr::null_mut()), ptr::null_mut()];
+    //     let mut submenu = vec![
+    //         IupSubmenu("Edit\0".as_ptr() as *const i8, IupMenuv(subsubmenu.as_mut_ptr())),
+    //         IupMenuv(ptr::null_mut()), ptr::null_mut()
+    //     ];
+    //     IupSetAttributeHandle(dialog.handle(), "MENU\0".as_ptr() as *const i8, IupMenuv(submenu.as_mut_ptr()));
+
+    // }
+    dialog.set_menu(Some(&Menu::with_children(&[
+        &Submenu::with_title_and_menu("File", &file_menu),
+    ])));
 
     dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center)
           .expect("There was a problem showing the window");

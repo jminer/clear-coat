@@ -25,7 +25,7 @@ use super::attributes::{
     TitleAttribute,
     VisibleAttribute,
     set_attribute_handle,
-    get_attribute_handle,
+    reset_attribute,
 };
 use super::callbacks::{
     CallbackAction,
@@ -38,10 +38,17 @@ use super::callbacks::{
     with_callbacks,
 };
 use super::containers::Container;
+use super::extra_refs::{
+    ExtraRefKey,
+    add_extra_ref,
+    remove_extra_ref,
+};
 use super::handle_rc::HandleRc;
 
 #[derive(Clone)]
 pub struct Dialog(HandleRc);
+
+const EXTRA_REF_MENU: ExtraRefKey = ExtraRefKey(0);
 
 impl Dialog {
     pub fn new() -> Dialog {
@@ -86,23 +93,21 @@ impl Dialog {
         }
     }
 
-    pub fn set_menu(&self, menu: &Menu) {
+    pub fn set_menu(&self, menu: Option<&Menu>) {
         unsafe {
-            let old_menu_ih = get_attribute_handle(self.handle(), "MENU\0");
-            // Create a HandleRc reference. It will destroy the control when it is dropped if
-            // there are no other references to the menu.
-            let old_menu = if !old_menu_ih.is_null() {
-                IupDetach(old_menu_ih);
-                Some(HandleRc::new(old_menu_ih))
+            //let old_menu_ih = get_attribute_handle(self.handle(), "MENU\0");
+            let new_menu_ih = menu.map_or(ptr::null_mut(), |m| m.handle());
+            if new_menu_ih.is_null() {
+                reset_attribute(self.handle(), "MENU\0");
+                remove_extra_ref(self.handle(), EXTRA_REF_MENU);
             } else {
-                None
-            };
-            set_attribute_handle(self.handle(), "MENU\0", menu.handle());
-            // This is kind of a hack. Without this line, the menu would not be set as a child
-            // of the dialog until the dialog is mapped.
+                set_attribute_handle(self.handle(), "MENU\0", new_menu_ih);
+                remove_extra_ref(self.handle(), EXTRA_REF_MENU);
+                add_extra_ref(self.handle(), EXTRA_REF_MENU, HandleRc::new(new_menu_ih));
+            }
+            // From testing, I've found that a menu does get set as the dialog's child, but only
+            // when the dialog is mapped.
             // (The menu's parent is set in iDialogSetMenuAttrib() in IUP.)
-            IupAppend(self.handle(), menu.handle());
-            drop(old_menu);
         }
     }
 

@@ -9,6 +9,7 @@
 extern crate clear_coat;
 extern crate iup_sys;
 
+use std::ptr;
 use std::sync::atomic::{self, AtomicUsize};
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
@@ -17,28 +18,31 @@ use iup_sys::*;
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 #[test]
-fn test_menu_drop() {
+fn test_menu_drop_with_show() {
     let dialog = Dialog::with_child(&Fill::new());
+
     let menu = Menu::new();
     menu.destroy_event().add(move || {
         COUNTER.fetch_add(1, atomic::Ordering::SeqCst);
     });
     dialog.set_menu(Some(&menu));
-    drop(menu);
-    // Test that the menu hasn't been destroyed.
-    assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 0);
+
+    dialog.show_event().add(|_| CallbackAction::Close );
+    dialog.show_xy(ScreenPosition::Center, ScreenPosition::Center).expect("could not show dialog");
+    main_loop();
 
     let menu2 = Menu::new();
     menu2.destroy_event().add(move || {
         COUNTER.fetch_add(2, atomic::Ordering::SeqCst);
     });
     dialog.set_menu(Some(&menu2));
-    // Test that adding another menu destroyed the first one.
-    assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 1);
+    // Test that the first menu is no longer a child.
+    unsafe { assert_eq!(IupGetParent(menu.handle()), ptr::null_mut()); }
+    unsafe { assert_eq!(IupGetChildPos(dialog.handle(), menu.handle()), -1); }
     drop(menu2);
-    assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 1);
-
+    assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 0);
     drop(dialog);
-    // Test that the menu is destroyed when the dialog is.
+    assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 2);
+    drop(menu);
     assert_eq!(COUNTER.load(atomic::Ordering::Acquire), 3);
 }
