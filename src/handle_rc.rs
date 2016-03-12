@@ -23,7 +23,8 @@ thread_local!(
 // simplified version of CallbackRegistry::add_callback
 // An ldestroy callback should hold a reference to a control, so that when it is dropped a control
 // is dropped. Doing so will cause the LDESTROY_CALLBACKS HashMap to be accessed, causing a panic
-// due to being borrowed by remove_ldestroy_callback.
+// due to being borrowed by remove_ldestroy_callback. It is fine to drop a control in the callback,
+// just not to capture a control so that the control is dropped when the callback is.
 pub fn add_ldestroy_callback_inner(ih: *mut Ihandle, cb: Box<FnMut(*mut Ihandle) + 'static>) -> Token {
     LDESTROY_CALLBACKS.with(|reg| {
         let mut map = reg.borrow_mut();
@@ -72,7 +73,10 @@ pub fn remove_ldestroy_callback(token: Token) {
 extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
     handle_rc_destroy_cb(ih);
     LDESTROY_CALLBACKS.with(|cell| {
-        if let Some(mut cbs) = cell.borrow_mut().remove(&ih) {
+        // Putting this line in the if condition will currently cause the HashMap borrow to last
+        // for the entire if body.
+        let cbs_opt = cell.borrow_mut().remove(&ih);
+        if let Some(mut cbs) = cbs_opt {
             for cb in cbs.iter_mut() {
                 cb.1(ih);
             }
