@@ -1,6 +1,6 @@
 [package]
 name = "clear-coat"
-version = "0.1.0"
+version = "0.0.3"
 authors = ["Jordan Miner <jminer7@gmail.com>"]
 description = "Clear Coat is a Rust wrapper for the IUP GUI library."
 repository = "https://github.com/jminer/clear-coat"
