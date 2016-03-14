@@ -254,6 +254,70 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
     }
 }
 
+// This macro is only for use by `impl_callbacks!`.
+macro_rules! impl_callbacks_inner {
+    (
+        ( $($impl_or_trait:tt)* ) {
+            $(
+                $prop_name:expr => $method_name:ident {
+                    $hash_name:ident<$fn_ty:ty, $token_name:ident>
+                }
+                extern fn $extern_fn_name:ident( $($extern_fn_params:tt)* ) $(-> $ret_ty:ty)* { $($extern_fn_body:tt)* }
+            )+
+        }
+    ) => {
+        // See Rust issues #5846 and #16036
+        // The internal macro here is the workaround to get the tt metavariables in the extern fn
+        // to parse.
+        macro_rules! internal_58e1 { // four random hex digits for a unique name
+            () => {
+                // Define the inherent methods or trait with the event methods
+                $($impl_or_trait)* {
+                    $(
+                        fn $method_name<'a>(&'a self) -> Event<'a, $fn_ty, $token_name>
+                        where &'a Self: CoerceUnsized<&'a Control> {
+                            Event::new(self as &Control, &$hash_name)
+                        }
+                    )*
+                }
+
+                // Define the globals that store the callbacks
+                $(
+                    callback_token!($token_name);
+                    thread_local!(
+                        static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
+                            CallbackRegistry::new($prop_name, $extern_fn_name)
+                    );
+
+                    extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
+                        $($extern_fn_body)*
+                    }
+                )*
+            }
+        }
+        internal_58e1!();
+    };
+}
+
+// This macro replaces 9 lines of code with 5 lines of a lot simpler code. Without it, the
+// extern function name, the closure type, and the token name have to be repeated twice, and the
+// hash name has to be repeated three times.
+// The extern function definition is passed through unchanged, but is matched against to pull the
+// name out so that it can be passed to `CallbackRegistry::new`.
+macro_rules! impl_callbacks {
+    (
+        trait $trait_name:ident { $($tail:tt)* }
+    ) => {
+        impl_callbacks_inner!((pub trait $trait_name : Control) { $($tail)* });
+    };
+
+    (
+        $struct_name:ident { $($tail:tt)* }
+    ) => {
+        impl_callbacks_inner!((impl $struct_name) { $($tail)* });
+    };
+}
+
 
 
 callback_token!(DestroyCallbackToken);
@@ -265,6 +329,8 @@ extern fn destroy_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &DESTROY_CALLBACKS)
 }
 
+// I'm not using `impl_callbacks!` for this trait so that it is an example of what the
+// macro generates.
 pub trait MenuCommonCallbacks : Control {
     // fn map_event();
     // fn unmap_event();
@@ -294,24 +360,6 @@ extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &KILL_FOCUS_CALLBACKS)
 }
 
-callback_token!(EnterWindowCallbackToken);
-thread_local!(
-    static ENTER_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), EnterWindowCallbackToken> =
-        CallbackRegistry::new("ENTERWINDOW_CB", enter_window_cb)
-);
-extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
-    simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
-}
-
-callback_token!(LeaveWindowCallbackToken);
-thread_local!(
-    static LEAVE_WINDOW_CALLBACKS: CallbackRegistry<FnMut(), LeaveWindowCallbackToken> =
-        CallbackRegistry::new("LEAVEWINDOW_CB", leave_window_cb)
-);
-extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
-    simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
-}
-
 pub trait GetKillFocusCallbacks : Control {
     fn get_focus_event<'a>(&'a self) -> Event<'a, FnMut(), GetFocusCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
@@ -324,15 +372,21 @@ pub trait GetKillFocusCallbacks : Control {
     }
 }
 
-pub trait EnterLeaveWindowCallbacks : Control {
-    fn enter_window_event<'a>(&'a self) -> Event<'a, FnMut(), EnterWindowCallbackToken>
-    where &'a Self: CoerceUnsized<&'a Control> {
-        Event::new(self as &Control, &ENTER_WINDOW_CALLBACKS)
-    }
+impl_callbacks! {
+    trait EnterLeaveWindowCallbacks {
+        "ENTERWINDOW_CB" => enter_window_event {
+            ENTER_WINDOW_CALLBACKS<FnMut(), EnterWindowCallbackToken>
+        }
+        extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
+            simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
+        }
 
-    fn leave_window_event<'a>(&'a self) -> Event<'a, FnMut(), LeaveWindowCallbackToken>
-    where &'a Self: CoerceUnsized<&'a Control> {
-        Event::new(self as &Control, &LEAVE_WINDOW_CALLBACKS)
+        "LEAVEWINDOW_CB" => leave_window_event {
+            LEAVE_WINDOW_CALLBACKS<FnMut(), LeaveWindowCallbackToken>
+        }
+        extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
+            simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
+        }
     }
 }
 
@@ -385,5 +439,16 @@ pub trait ButtonCallback {
     fn button_event<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken>
     where &'a Self: CoerceUnsized<&'a Control> {
         Event::new(self as &Control, &BUTTON_CALLBACKS)
+    }
+}
+
+impl_callbacks! {
+    trait ValueChangedCallback {
+        "VALUECHANGED_CB\0" => value_changed_event {
+            VALUE_CHANGED_CALLBACKS<FnMut(), ValueChangedCallbackToken>
+        }
+        extern fn value_changed_cb(ih: *mut Ihandle) -> c_int {
+            simple_callback(ih, &VALUE_CHANGED_CALLBACKS)
+        }
     }
 }
