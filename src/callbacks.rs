@@ -341,34 +341,21 @@ pub trait MenuCommonCallbacks : Control {
     }
 }
 
+impl_callbacks! {
+    trait GetKillFocusCallbacks {
+        "GETFOCUS_CB" => get_focus_event {
+            GET_FOCUS_CALLBACKS<FnMut(), GetFocusCallbackToken>
+        }
+        extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
+            simple_callback(ih, &GET_FOCUS_CALLBACKS)
+        }
 
-callback_token!(GetFocusCallbackToken);
-thread_local!(
-    static GET_FOCUS_CALLBACKS: CallbackRegistry<FnMut(), GetFocusCallbackToken> =
-        CallbackRegistry::new("GETFOCUS_CB", get_focus_cb)
-);
-extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
-    simple_callback(ih, &GET_FOCUS_CALLBACKS)
-}
-
-callback_token!(KillFocusCallbackToken);
-thread_local!(
-    static KILL_FOCUS_CALLBACKS: CallbackRegistry<FnMut(), KillFocusCallbackToken> =
-        CallbackRegistry::new("KILLFOCUS_CB", kill_focus_cb)
-);
-extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
-    simple_callback(ih, &KILL_FOCUS_CALLBACKS)
-}
-
-pub trait GetKillFocusCallbacks : Control {
-    fn get_focus_event<'a>(&'a self) -> Event<'a, FnMut(), GetFocusCallbackToken>
-    where &'a Self: CoerceUnsized<&'a Control> {
-        Event::new(self as &Control, &GET_FOCUS_CALLBACKS)
-    }
-
-    fn kill_focus_event<'a>(&'a self) -> Event<'a, FnMut(), KillFocusCallbackToken>
-    where &'a Self: CoerceUnsized<&'a Control> {
-        Event::new(self as &Control, &KILL_FOCUS_CALLBACKS)
+        "KILLFOCUS_CB" => kill_focus_event {
+            KILL_FOCUS_CALLBACKS<FnMut(), KillFocusCallbackToken>
+        }
+        extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
+            simple_callback(ih, &KILL_FOCUS_CALLBACKS)
+        }
     }
 }
 
