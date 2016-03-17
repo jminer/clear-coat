@@ -262,7 +262,7 @@ macro_rules! impl_callbacks_inner {
                 $prop_name:expr => $method_name:ident {
                     $hash_name:ident<$fn_ty:ty, $token_name:ident>
                 }
-                extern fn $extern_fn_name:ident( $($extern_fn_params:tt)* ) $(-> $ret_ty:ty)* { $($extern_fn_body:tt)* }
+                unsafe extern fn $extern_fn_name:ident( $($extern_fn_params:tt)* ) $(-> $ret_ty:ty)* { $($extern_fn_body:tt)* }
             )+
         }
     ) => {
@@ -289,7 +289,7 @@ macro_rules! impl_callbacks_inner {
                             CallbackRegistry::new($prop_name, $extern_fn_name)
                     );
 
-                    extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
+                    unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
                         $($extern_fn_body)*
                     }
                 )*
@@ -346,14 +346,14 @@ impl_callbacks! {
         "GETFOCUS_CB" => get_focus_event {
             GET_FOCUS_CALLBACKS<FnMut(), GetFocusCallbackToken>
         }
-        extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
+        unsafe extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &GET_FOCUS_CALLBACKS)
         }
 
         "KILLFOCUS_CB" => kill_focus_event {
             KILL_FOCUS_CALLBACKS<FnMut(), KillFocusCallbackToken>
         }
-        extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
+        unsafe extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &KILL_FOCUS_CALLBACKS)
         }
     }
@@ -364,14 +364,14 @@ impl_callbacks! {
         "ENTERWINDOW_CB" => enter_window_event {
             ENTER_WINDOW_CALLBACKS<FnMut(), EnterWindowCallbackToken>
         }
-        extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
+        unsafe extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
         }
 
         "LEAVEWINDOW_CB" => leave_window_event {
             LEAVE_WINDOW_CALLBACKS<FnMut(), LeaveWindowCallbackToken>
         }
-        extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
+        unsafe extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &LEAVE_WINDOW_CALLBACKS)
         }
     }
@@ -434,7 +434,7 @@ impl_callbacks! {
         "VALUECHANGED_CB\0" => value_changed_event {
             VALUE_CHANGED_CALLBACKS<FnMut(), ValueChangedCallbackToken>
         }
-        extern fn value_changed_cb(ih: *mut Ihandle) -> c_int {
+        unsafe extern fn value_changed_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &VALUE_CHANGED_CALLBACKS)
         }
     }
