@@ -286,7 +286,7 @@ macro_rules! impl_callbacks_inner {
                     callback_token!($token_name);
                     thread_local!(
                         static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
-                            CallbackRegistry::new($prop_name, $extern_fn_name)
+                            CallbackRegistry::new($prop_name, unsafe { mem::transmute::<_, Icallback>($extern_fn_name) })
                     );
 
                     unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
@@ -392,40 +392,41 @@ pub struct ButtonArgs {
     _dummy: (),
 }
 
-callback_token!(ButtonCallbackToken);
-thread_local!(
-    static BUTTON_CALLBACKS: CallbackRegistry<FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken> =
-        CallbackRegistry::new("BUTTON_CB",  unsafe { mem::transmute::<_, Icallback>(button_cb) })
-);
-unsafe extern fn button_cb(ih: *mut Ihandle, button: c_int, pressed: c_int, x: c_int, y: c_int, status: *mut c_char) -> c_int {
-    // Maybe the callback should be able to return Ignore (and thus this function return
-    // IUP_IGNORE). My main hesitation is that IUP's docs state that it is system
-    // dependent: "On some controls if IUP_IGNORE is returned the action is ignored (this is
-    // system dependent)." Plus, it doesn't seem really useful and is more verbose.
-    with_callbacks(ih, &BUTTON_CALLBACKS, |cbs| {
-        let args = ButtonArgs {
-            button: MouseButton::from_int(button),
-            pressed: pressed != 0,
-            x: x as i32,
-            y: y as i32,
-            status: KeyboardMouseStatus::from_cstr(status),
-            _dummy: (),
-        };
-        let mut action = CallbackAction::Default;
-        for cb in cbs {
-            match (&mut *cb.1.borrow_mut())(&args) {
-                CallbackAction::Default => {},
-                cb_action => action = cb_action,
-            }
+impl_callbacks! {
+    trait ButtonCallback {
+        "BUTTON_CB" => button_event {
+            BUTTON_CALLBACKS<FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken>
         }
-        action.to_int()
-    })
-}
-
-pub trait ButtonCallback {
-    fn button_event<'a>(&'a self) -> Event<'a, FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken>
-    where &'a Self: CoerceUnsized<&'a Control> {
-        Event::new(self as &Control, &BUTTON_CALLBACKS)
+        unsafe extern fn button_cb(ih: *mut Ihandle,
+                                   button: c_int,
+                                   pressed: c_int,
+                                   x: c_int,
+                                   y: c_int,
+                                   status: *mut c_char)
+                                   -> c_int {
+            // Maybe the callback should be able to return Ignore (and thus this function return
+            // IUP_IGNORE). My main hesitation is that IUP's docs state that it is system
+            // dependent: "On some controls if IUP_IGNORE is returned the action is ignored (this is
+            // system dependent)." Plus, it doesn't seem really useful and is more verbose.
+            with_callbacks(ih, &BUTTON_CALLBACKS, |cbs| {
+                let args = ButtonArgs {
+                    button: MouseButton::from_int(button),
+                    pressed: pressed != 0,
+                    x: x as i32,
+                    y: y as i32,
+                    status: KeyboardMouseStatus::from_cstr(status),
+                    _dummy: (),
+                };
+                let mut action = CallbackAction::Default;
+                for cb in cbs {
+                    match (&mut *cb.1.borrow_mut())(&args) {
+                        CallbackAction::Default => {},
+                        cb_action => action = cb_action,
+                    }
+                }
+                action.to_int()
+            })
+        }
     }
 }
 
