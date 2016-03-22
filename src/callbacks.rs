@@ -9,7 +9,6 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::collections::{hash_map, HashMap};
 use std::marker::PhantomData;
-use std::mem;
 use std::ops::{CoerceUnsized};
 use std::panic::{self, RecoverSafe};
 use std::rc::Rc;
@@ -255,9 +254,13 @@ impl<'a, F: ?Sized, T: Into<Token> + From<Token>> Event<'a, F, T> {
 }
 
 // This macro is only for use by `impl_callbacks!`.
+// Note that the two patterns and substitutions are nearly identical (and should be kept that way).
+// The only difference is the `pub` before the inherent method. I spent hours trying and trying to
+// avoid duplicating the macro for the `pub`, but I failed. I have doubts that Rust's macros are
+// currently powerful enough.
 macro_rules! impl_callbacks_inner {
     (
-        ( $($impl_or_trait:tt)* ) {
+        ( $($impl_or_trait:tt)* ) pub_false {
             $(
                 $prop_name:expr => $method_name:ident {
                     $hash_name:ident<$fn_ty:ty, $token_name:ident>
@@ -286,7 +289,50 @@ macro_rules! impl_callbacks_inner {
                     callback_token!($token_name);
                     thread_local!(
                         static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
-                            CallbackRegistry::new($prop_name, unsafe { mem::transmute::<_, Icallback>($extern_fn_name) })
+                            CallbackRegistry::new($prop_name, unsafe { ::std::mem::transmute::<_, Icallback>($extern_fn_name) })
+                    );
+
+                    unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
+                        $($extern_fn_body)*
+                    }
+                )*
+            }
+        }
+        internal_58e1!();
+    };
+
+
+    (
+        ( $($impl_or_trait:tt)* ) pub_true {
+            $(
+                $prop_name:expr => $method_name:ident {
+                    $hash_name:ident<$fn_ty:ty, $token_name:ident>
+                }
+                unsafe extern fn $extern_fn_name:ident( $($extern_fn_params:tt)* ) $(-> $ret_ty:ty)* { $($extern_fn_body:tt)* }
+            )+
+        }
+    ) => {
+        // See Rust issues #5846 and #16036
+        // The internal macro here is the workaround to get the tt metavariables in the extern fn
+        // to parse.
+        macro_rules! internal_58e1 { // four random hex digits for a unique name
+            () => {
+                // Define the inherent methods or trait with the event methods
+                $($impl_or_trait)* {
+                    $(
+                        pub fn $method_name<'a>(&'a self) -> Event<'a, $fn_ty, $token_name>
+                        where &'a Self: CoerceUnsized<&'a Control> {
+                            Event::new(self as &Control, &$hash_name)
+                        }
+                    )*
+                }
+
+                // Define the globals that store the callbacks
+                $(
+                    callback_token!($token_name);
+                    thread_local!(
+                        static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
+                            CallbackRegistry::new($prop_name, unsafe { ::std::mem::transmute::<_, Icallback>($extern_fn_name) })
                     );
 
                     unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
@@ -308,13 +354,13 @@ macro_rules! impl_callbacks {
     (
         trait $trait_name:ident { $($tail:tt)* }
     ) => {
-        impl_callbacks_inner!((pub trait $trait_name : Control) { $($tail)* });
+        impl_callbacks_inner!((pub trait $trait_name : Control) pub_false { $($tail)* });
     };
 
     (
         $struct_name:ident { $($tail:tt)* }
     ) => {
-        impl_callbacks_inner!((impl $struct_name) { $($tail)* });
+        impl_callbacks_inner!((impl $struct_name) pub_true { $($tail)* });
     };
 }
 

@@ -48,6 +48,7 @@ mod attributes;
 mod button;
 mod label;
 mod menu;
+mod text;
 mod dialog;
 mod file_dlg;
 mod handle_rc;
@@ -57,6 +58,7 @@ pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
 pub use label::Label;
+pub use text::Text;
 pub use menu::{Menu, MenuSubitem, Item, Separator, Submenu};
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event};
@@ -71,7 +73,13 @@ pub mod common_attrs_cbs {
         TitleAttribute,
         VisibleAttribute,
     };
-    pub use callbacks::{MenuCommonCallbacks, GetKillFocusCallbacks, EnterLeaveWindowCallbacks, ButtonCallback};
+    pub use callbacks::{
+        MenuCommonCallbacks,
+        GetKillFocusCallbacks,
+        EnterLeaveWindowCallbacks,
+        ButtonCallback,
+        ValueChangedCallback,
+    };
 }
 
 use std::ptr;
