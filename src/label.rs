@@ -29,6 +29,7 @@ use super::callbacks::{
 };
 use super::handle_rc::HandleRc;
 
+/// A label interface element, which displays a separator, a text, or an image.
 #[derive(Clone)]
 pub struct Label(HandleRc);
 
