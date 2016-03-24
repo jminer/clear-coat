@@ -7,7 +7,6 @@
 
 use std::ptr;
 use iup_sys::*;
-use libc::{c_char, c_int};
 use smallvec::SmallVec;
 use super::{
     Control,
@@ -29,11 +28,11 @@ use super::callbacks::{
 };
 use super::handle_rc::HandleRc;
 
-/// A label interface element, which displays a separator, a text, or an image.
 #[derive(Clone)]
 pub struct Label(HandleRc);
 
 impl Label {
+    // Creates an empty label.
     pub fn new() -> Self {
         unsafe {
             ::iup_open();
@@ -42,6 +41,7 @@ impl Label {
         }
     }
 
+    /// Creates a label with text to be shown on it.
     pub fn with_title(title: &str) -> Self {
         unsafe {
             ::iup_open();
@@ -52,6 +52,7 @@ impl Label {
         }
     }
 
+    /// Gets the horizontal alignment of the contents of the label.
     pub fn halignment(&self) -> ::HAlignment {
         unsafe {
             let slice = get_str_attribute_slice(self.handle(), "ALIGNMENT");
@@ -59,6 +60,7 @@ impl Label {
         }
     }
 
+    /// Sets the horizontal alignment of the contents of the label.
     pub fn set_halignment(&self, alignment: ::HAlignment) -> &Self {
         set_str_attribute(self.handle(), "ALIGNMENT", alignment.to_str());
         self
