@@ -17,13 +17,18 @@ use clear_coat::common_attrs_cbs::*;
 fn main() {
     let button1 = Button::new();
     button1.set_title("Push Me");
-    let button2 = Button::new();
-    button2.set_title("Hi");
     button1.action_event().add(|| println!("you pushed it!"));
+
+    let button2 = Button::new();
+    button2.set_title("Print text");
+
     let button3 = Button::new();
     button3.set_title("Hi");
     let button4 = Button::new();
     button4.set_title("Hi");
+    let text_box = Text::new();
+    let text_box2 = text_box.clone();
+    button2.action_event().add(move || println!("Text box text: \"{}\"", text_box2.value()));
 
     let new_item = Item::with_title("New");
     let open_item = Item::with_title("Open");
@@ -37,6 +42,7 @@ fn main() {
     let dialog = Dialog::with_child(&vbox!(
         button1, fill!(),
         hbox!(fill!(), button3, button4),
+        text_box,
         button2));
     // unsafe {
     //     let mut subsubmenu = vec![IupItem("Foo\0".as_ptr() as *const i8, ptr::null_mut()), ptr::null_mut()];

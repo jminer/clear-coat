@@ -5,6 +5,7 @@
  * modified, or distributed except according to those terms.
  */
 
+use std::borrow::Cow;
 use std::ops::CoerceUnsized;
 use std::ptr;
 use iup_sys::*;
@@ -18,6 +19,10 @@ use super::attributes::{
     MinMaxSizeAttribute,
     TipAttribute,
     VisibleAttribute,
+    str_to_c_vec,
+    get_str_attribute,
+    get_str_attribute_slice,
+    set_str_attribute,
 };
 use super::callbacks::{
     CallbackRegistry,
@@ -41,6 +46,17 @@ impl Text {
             let ih = IupText(ptr::null_mut());
             Text(HandleRc::new(ih))
         }
+    }
+
+    pub fn value(&self) -> String {
+        get_str_attribute(self.handle(), "VALUE\0")
+    }
+    pub unsafe fn value_slice(&self) -> Cow<str> {
+        get_str_attribute_slice(self.handle(), "VALUE\0")
+    }
+
+    pub fn set_value(&self, value: &str) {
+        set_str_attribute(self.handle(), "VALUE\0", value);
     }
 }
 
