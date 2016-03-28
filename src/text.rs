@@ -55,8 +55,32 @@ impl Text {
         get_str_attribute_slice(self.handle(), "VALUE\0")
     }
 
-    pub fn set_value(&self, value: &str) {
+    pub fn set_value(&self, value: &str) -> &Self {
         set_str_attribute(self.handle(), "VALUE\0", value);
+        self
+    }
+
+    pub fn multiline(&self) -> bool {
+        unsafe {
+            get_str_attribute_slice(self.handle(), "MULTILINE\0") == "YES"
+        }
+    }
+
+    pub fn set_multiline(&self, multiline: bool) -> &Self {
+        set_str_attribute(self.handle(), "MULTILINE\0", if multiline { "YES\0" } else { "NO\0" });
+        self
+    }
+
+    pub fn visible_lines(&self) -> i32 {
+        unsafe {
+            let val = get_str_attribute_slice(self.handle(), "VISIBLELINES\0");
+            val.parse().expect("could not convert VISIBLELINES to an integer")
+        }
+    }
+
+    pub fn set_visible_lines(&self, lines: i32) -> &Self {
+        set_str_attribute(self.handle(), "VISIBLELINES\0", &lines.to_string());
+        self
     }
 }
 

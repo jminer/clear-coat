@@ -27,6 +27,8 @@ fn main() {
     let button4 = Button::new();
     button4.set_title("Hi");
     let text_box = Text::new();
+    text_box.set_multiline(true);
+    text_box.set_visible_lines(5);
     let text_box2 = text_box.clone();
     button2.action_event().add(move || println!("Text box text: \"{}\"", text_box2.value()));
     let check_box = Toggle::new();
