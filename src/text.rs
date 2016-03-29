@@ -60,6 +60,22 @@ impl Text {
         self
     }
 
+    pub fn append(&self, text: &str) -> &Self {
+        set_str_attribute(self.handle(), "APPEND\0", text);
+        self
+    }
+
+    pub fn append_newline(&self) -> bool {
+        unsafe {
+            get_str_attribute_slice(self.handle(), "APPENDNEWLINE\0") == "YES"
+        }
+    }
+
+    pub fn set_append_newline(&self, enabled: bool) -> &Self {
+        set_str_attribute(self.handle(), "APPENDNEWLINE\0", if enabled { "YES\0" } else { "NO\0" });
+        self
+    }
+
     pub fn multiline(&self) -> bool {
         unsafe {
             get_str_attribute_slice(self.handle(), "MULTILINE\0") == "YES"
