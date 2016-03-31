@@ -60,17 +60,24 @@ impl Text {
         self
     }
 
+    /// Inserts text at the end of the current text. Ignored if called before the control is mapped.
+    /// If this control is multiline, [`append_newline`](./struct.Text.html#method.append_newline)
+    /// is true, and the current text is not empty, then a `'\n'` character will be automatically
+    /// inserted before the appended text.
     pub fn append(&self, text: &str) -> &Self {
         set_str_attribute(self.handle(), "APPEND\0", text);
         self
     }
 
+    /// If true, this control is multiline, and the current text is not empty, then a `'\n'`
+    /// character will be automatically inserted before text appended using `append`.
     pub fn append_newline(&self) -> bool {
         unsafe {
             get_str_attribute_slice(self.handle(), "APPENDNEWLINE\0") == "YES"
         }
     }
 
+    /// See [`append_newline`](./struct.Text.html#method.append_newline)
     pub fn set_append_newline(&self, enabled: bool) -> &Self {
         set_str_attribute(self.handle(), "APPENDNEWLINE\0", if enabled { "YES\0" } else { "NO\0" });
         self
