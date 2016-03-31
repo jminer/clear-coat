@@ -152,6 +152,7 @@ pub fn exit_loop() {
 /// function is called.
 ///
 /// To avoid `exit_loop` being called, call `set_lock_loop(true)` before hiding the last dialog.
+///
 /// The default is false.
 pub fn lock_loop() -> bool {
     unsafe {

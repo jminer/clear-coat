@@ -71,6 +71,8 @@ impl Text {
 
     /// If true, this control is multiline, and the current text is not empty, then a `'\n'`
     /// character will be automatically inserted before text appended using `append`.
+    ///
+    /// The default is true.
     pub fn append_newline(&self) -> bool {
         unsafe {
             get_str_attribute_slice(self.handle(), "APPENDNEWLINE\0") == "YES"
