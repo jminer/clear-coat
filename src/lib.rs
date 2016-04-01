@@ -46,6 +46,7 @@ mod containers;
 
 mod attributes;
 mod button;
+mod canvas;
 mod label;
 mod menu;
 mod text;
@@ -58,6 +59,7 @@ mod extra_refs;
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
+pub use canvas::{Canvas, PaintingArgs};
 pub use label::Label;
 pub use text::Text;
 pub use toggle::Toggle;
