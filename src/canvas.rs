@@ -5,7 +5,6 @@
  * modified, or distributed except according to those terms.
  */
 
-use libc::c_float;
 #[cfg(windows)]
 use winapi;
 use super::control_prelude::*;
@@ -35,6 +34,7 @@ impl MenuCommonCallbacks for Canvas {}
 impl GetKillFocusCallbacks for Canvas {}
 impl EnterLeaveWindowCallbacks for Canvas {}
 impl ButtonCallback for Canvas {}
+impl CanvasCallbacks for Canvas {}
 
 #[derive(Clone)]
 pub struct PaintingArgs {

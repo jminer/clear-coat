@@ -27,6 +27,8 @@ pub use super::callbacks::{
     EnterLeaveWindowCallbacks,
     GetKillFocusCallbacks,
     ButtonCallback,
+    ValueChangedCallback,
+    CanvasCallbacks,
     Event,
     Token,
 };

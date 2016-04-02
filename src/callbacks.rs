@@ -13,7 +13,7 @@ use std::ops::{CoerceUnsized};
 use std::panic::{self, RecoverSafe};
 use std::rc::Rc;
 use std::thread::LocalKey;
-use libc::{c_int, c_char};
+use libc::{c_int, c_char, c_float};
 use iup_sys::*;
 use smallvec::SmallVec;
 use super::attributes::str_to_c_vec;
@@ -483,6 +483,69 @@ impl_callbacks! {
         }
         unsafe extern fn value_changed_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &VALUE_CHANGED_CALLBACKS)
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct MotionArgs {
+    pub x: i32,
+    pub y: i32,
+    pub status: KeyboardMouseStatus,
+    _dummy: (),
+}
+
+impl_callbacks! {
+    trait CanvasCallbacks {
+        "ACTION\0" => action_event {
+            CANVAS_ACTION_CALLBACKS<FnMut(f32, f32), CanvasActionToken>
+        }
+        unsafe extern fn canvas_action_cb(ih: *mut Ihandle, posx: c_float, posy: c_float) -> c_int {
+            with_callbacks(ih, &CANVAS_ACTION_CALLBACKS, |cbs| {
+                for cb in cbs {
+                    (&mut *cb.1.borrow_mut())(posx, posy);
+                }
+                IUP_DEFAULT
+            })
+        }
+
+        "MOTION_CB\0" => motion_event {
+            MOTION_CALLBACKS<FnMut(&MotionArgs), MotionToken>
+        }
+        unsafe extern fn motion_cb(ih: *mut Ihandle,
+                                   x: c_int,
+                                   y: c_int,
+                                   status: *mut c_char) -> c_int {
+            with_callbacks(ih, &MOTION_CALLBACKS, |cbs| {
+                let args = MotionArgs {
+                    x: x as i32,
+                    y: y as i32,
+                    status: KeyboardMouseStatus::from_cstr(status),
+                    _dummy: (),
+                };
+                for cb in cbs {
+                    (&mut *cb.1.borrow_mut())(&args);
+                }
+                IUP_DEFAULT
+            })
+        }
+
+        "KEYPRESS_CB\0" => key_press_event {
+            KEY_PRESS_CALLBACKS<FnMut(u32, bool) -> CallbackAction, KeyPressToken>
+        }
+        unsafe extern fn key_press_cb(ih: *mut Ihandle, c: c_int, press: c_int) -> c_int {
+            with_callbacks(ih, &KEY_PRESS_CALLBACKS, |cbs| {
+                let pressed = press != 0;
+
+                let mut action = CallbackAction::Default;
+                for cb in cbs {
+                    match (&mut *cb.1.borrow_mut())(c as u32, pressed) {
+                        CallbackAction::Default => {},
+                        cb_action => action = cb_action,
+                    }
+                }
+                action.to_int()
+            })
         }
     }
 }

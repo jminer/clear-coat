@@ -84,8 +84,11 @@ pub mod common_attrs_cbs {
         MenuCommonCallbacks,
         GetKillFocusCallbacks,
         EnterLeaveWindowCallbacks,
+        ButtonArgs,
         ButtonCallback,
         ValueChangedCallback,
+        MotionArgs,
+        CanvasCallbacks,
     };
 }
 
