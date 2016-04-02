@@ -64,7 +64,7 @@ pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
 pub use canvas::{Canvas, PaintingArgs};
 pub use label::Label;
-pub use text::Text;
+pub use text::{Text, CaretArgs};
 pub use toggle::Toggle;
 pub use menu::{Menu, MenuSubitem, Item, Separator, Submenu};
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};

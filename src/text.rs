@@ -121,15 +121,29 @@ impl GetKillFocusCallbacks for Text {}
 impl EnterLeaveWindowCallbacks for Text {}
 impl ValueChangedCallback for Text {}
 
+#[derive(Clone)]
+pub struct CaretArgs {
+    pub lin: usize,
+    pub col: usize,
+    pub pos: usize,
+    _dummy: (),
+}
+
 impl_callbacks! {
     Text {
         "CARET_CB\0" => caret_event {
-            CARET_CALLBACKS<FnMut(usize, usize, usize), CaretCallbackToken>
+            CARET_CALLBACKS<FnMut(&CaretArgs), CaretCallbackToken>
         }
         unsafe extern fn caret_cb(ih: *mut Ihandle, lin: c_int, col: c_int, pos: c_int) -> c_int {
             with_callbacks(ih, &CARET_CALLBACKS, |cbs| {
+                let args = CaretArgs {
+                    lin: lin as usize,
+                    col: col as usize,
+                    pos: pos as usize,
+                    _dummy: (),
+                };
                 for cb in cbs {
-                    (&mut *cb.1.borrow_mut())(lin as usize, col as usize, pos as usize);
+                    (&mut *cb.1.borrow_mut())(&args);
                 }
                 IUP_DEFAULT
             })
