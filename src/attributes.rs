@@ -7,9 +7,10 @@
 
 use std::borrow::Cow;
 use std::ffi::CStr;
-use libc::{c_char, c_int};
+use libc::{c_char, c_int, c_long};
 use iup_sys::*;
 use smallvec::SmallVec;
+use winapi;
 use super::Control;
 
 pub fn str_to_c_vec<'a: 'b, 'b, A: ::smallvec::Array<Item=u8>>(s: &'a str, buf: &'b mut SmallVec<A>) -> *const c_char {
@@ -112,6 +113,18 @@ pub trait ActiveAttribute : Control {
 
     fn set_active(&self, active: bool) {
         set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
+    }
+}
+
+pub trait CanvasAttributes : Control {
+    #[cfg(unix)]
+    fn x_window(&self) -> c_long {
+        get_attribute_ptr(self.handle(), "XWINDOW\0") as c_long
+    }
+
+    #[cfg(windows)]
+    fn hwnd(&self) -> winapi::HDC {
+        get_attribute_ptr(self.handle(), "HWND\0") as winapi::HDC
     }
 }
 

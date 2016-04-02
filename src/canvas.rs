@@ -26,6 +26,7 @@ impl Canvas {
 impl_control_traits!(Canvas);
 
 impl ActiveAttribute for Canvas {}
+impl CanvasAttributes for Canvas {}
 impl MinMaxSizeAttribute for Canvas {}
 impl TipAttribute for Canvas {}
 impl VisibleAttribute for Canvas {}
