@@ -224,6 +224,18 @@ pub unsafe trait Control {
             }
         }
     }
+
+    fn update(&self) {
+        unsafe {
+            IupUpdate(self.handle());
+        }
+    }
+
+    fn redraw(&self, include_children: bool) {
+        unsafe {
+            IupRedraw(self.handle(), if include_children { 1 } else { 0 });
+        }
+    }
 }
 
 // If this wrapper has the only reference, it gives up shared ownership of the *mut Ihandle.
