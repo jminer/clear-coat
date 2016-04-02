@@ -12,6 +12,7 @@
 extern crate libc;
 extern crate iup_sys;
 extern crate kernel32;
+extern crate winapi;
 extern crate smallvec;
 
 #[cfg(windows)]
@@ -43,6 +44,8 @@ macro_rules! impl_control_traits {
 mod callbacks;
 #[macro_use]
 mod containers;
+
+mod control_prelude;
 
 mod attributes;
 mod button;

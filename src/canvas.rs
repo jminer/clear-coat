@@ -5,25 +5,10 @@
  * modified, or distributed except according to those terms.
  */
 
-use std::ptr;
-use iup_sys::*;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    MinMaxSizeAttribute,
-    TipAttribute,
-    VisibleAttribute,
-};
-use super::callbacks::{
-    MenuCommonCallbacks,
-    EnterLeaveWindowCallbacks,
-    GetKillFocusCallbacks,
-    ButtonCallback,
-};
-use super::handle_rc::HandleRc;
+use libc::c_float;
+#[cfg(windows)]
+use winapi;
+use super::control_prelude::*;
 
 #[derive(Clone)]
 pub struct Canvas(HandleRc);
@@ -56,6 +41,8 @@ pub struct PaintingArgs {
     clip_rect: (i32, i32, i32, i32),
     //#[cfg(any(feature = "cairo"))]
     //cairo_cr: Cairo,
-    //#[cfg(windows)]
-    //hdc: winapi::HDC,
+    #[cfg(unix)]
+    xwindow: libc::c_ulong,
+    #[cfg(windows)]
+    hdc: winapi::HDC,
 }
