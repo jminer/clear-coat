@@ -16,7 +16,13 @@ use std::thread::LocalKey;
 use libc::{c_int, c_char, c_float};
 use iup_sys::*;
 use smallvec::SmallVec;
-use super::attributes::str_to_c_vec;
+#[cfg(windows)]
+use winapi;
+use super::attributes::{
+    str_to_c_vec,
+    get_str_attribute_slice,
+    get_attribute_ptr,
+};
 use super::{Control, MouseButton, KeyboardMouseStatus};
 use super::handle_rc::{add_ldestroy_callback, remove_ldestroy_callback};
 
@@ -488,6 +494,58 @@ impl_callbacks! {
 }
 
 #[derive(Clone)]
+pub struct CanvasActionArgs {
+    pub pos: (c_float, c_float),
+    pub clip_rect: (i32, i32, i32, i32),
+    //#[cfg(any(feature = "cairo"))]
+    //cairo_cr: Cairo,
+    #[cfg(windows)]
+    pub hdc: winapi::HDC,
+}
+
+impl CanvasActionArgs {
+    #[cfg(all(windows, not(feature = "cairo")))]
+    unsafe fn new(ih: *mut Ihandle, posx: c_float, posy: c_float) -> Self {
+        CanvasActionArgs {
+            pos: (posx, posy),
+            clip_rect: Self::get_clip_rect(ih),
+            hdc: get_attribute_ptr(ih, "HDC_WMPAINT\0") as winapi::HDC,
+        }
+    }
+
+    #[cfg(all(windows, feature = "cairo"))]
+    unsafe fn new(ih: *mut Ihandle, posx: c_float, posy: c_float) -> Self {
+        CanvasActionArgs {
+            pos: (posx, posy),
+            clip_rect: Self::get_clip_rect(ih),
+            cairo_cr: cairo_cr,
+            hdc: get_attribute_ptr(ih, "HDC_WMPAINT\0") as winapi::HDC,
+        }
+    }
+
+    #[cfg(all(not(windows), feature = "cairo"))]
+    unsafe fn new(ih: *mut Ihandle, posx: c_float, posy: c_float) -> Self {
+        CanvasActionArgs {
+            pos: (posx, posy),
+            clip_rect: Self::get_clip_rect(ih),
+            cairo_cr: cairo_cr,
+        }
+    }
+
+    unsafe fn get_clip_rect(ih: *mut Ihandle) -> (i32, i32, i32, i32) {
+        let clip_str = get_str_attribute_slice(ih, "CLIPRECT\0");
+        let mut clip_iter = clip_str
+                            .split(' ')
+                            .map(|s| s.parse().expect("could not convert CLIPRECT to integers"));
+        let msg = "failed to split CLIPRECT into four parts";
+        (clip_iter.next().expect(msg),
+         clip_iter.next().expect(msg),
+         clip_iter.next().expect(msg),
+         clip_iter.next().expect(msg))
+    }
+}
+
+#[derive(Clone)]
 pub struct MotionArgs {
     pub x: i32,
     pub y: i32,
@@ -498,12 +556,13 @@ pub struct MotionArgs {
 impl_callbacks! {
     trait CanvasCallbacks {
         "ACTION\0" => action_event {
-            CANVAS_ACTION_CALLBACKS<FnMut(f32, f32), CanvasActionToken>
+            CANVAS_ACTION_CALLBACKS<FnMut(&CanvasActionArgs), CanvasActionToken>
         }
         unsafe extern fn canvas_action_cb(ih: *mut Ihandle, posx: c_float, posy: c_float) -> c_int {
             with_callbacks(ih, &CANVAS_ACTION_CALLBACKS, |cbs| {
+                let args = CanvasActionArgs::new(ih, posx, posy);
                 for cb in cbs {
-                    (&mut *cb.1.borrow_mut())(posx, posy);
+                    (&mut *cb.1.borrow_mut())(&args);
                 }
                 IUP_DEFAULT
             })

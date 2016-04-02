@@ -5,8 +5,6 @@
  * modified, or distributed except according to those terms.
  */
 
-#[cfg(windows)]
-use winapi;
 use super::control_prelude::*;
 
 #[derive(Clone)]
@@ -36,14 +34,3 @@ impl GetKillFocusCallbacks for Canvas {}
 impl EnterLeaveWindowCallbacks for Canvas {}
 impl ButtonCallback for Canvas {}
 impl CanvasCallbacks for Canvas {}
-
-#[derive(Clone)]
-pub struct PaintingArgs {
-    clip_rect: (i32, i32, i32, i32),
-    //#[cfg(any(feature = "cairo"))]
-    //cairo_cr: Cairo,
-    #[cfg(unix)]
-    xwindow: libc::c_ulong,
-    #[cfg(windows)]
-    hdc: winapi::HDC,
-}

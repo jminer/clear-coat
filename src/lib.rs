@@ -62,7 +62,7 @@ mod extra_refs;
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
 pub use button::Button;
-pub use canvas::{Canvas, PaintingArgs};
+pub use canvas::{Canvas};
 pub use label::Label;
 pub use text::{Text, CaretArgs};
 pub use toggle::Toggle;
@@ -87,6 +87,7 @@ pub mod common_attrs_cbs {
         ButtonArgs,
         ButtonCallback,
         ValueChangedCallback,
+        CanvasActionArgs,
         MotionArgs,
         CanvasCallbacks,
     };
