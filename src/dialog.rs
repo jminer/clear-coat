@@ -20,6 +20,7 @@ use super::{
 };
 use super::attributes::{
     ActiveAttribute,
+    CursorAttribute,
     MinMaxSizeAttribute,
     TipAttribute,
     TitleAttribute,
@@ -176,6 +177,7 @@ impl Container for Dialog {}
 impl Popup for Dialog {}
 
 impl ActiveAttribute for Dialog {}
+impl CursorAttribute for Dialog {}
 impl MinMaxSizeAttribute for Dialog {}
 impl TipAttribute for Dialog {}
 impl TitleAttribute for Dialog {}

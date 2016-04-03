@@ -6,6 +6,7 @@
  */
 
 use std::borrow::Cow;
+use std::cell::Cell;
 use std::ffi::CStr;
 use libc::{c_char, c_int, c_long};
 use iup_sys::*;
@@ -43,6 +44,12 @@ pub unsafe fn set_attribute_handle(ih: *mut Ihandle, name: &str, value: *mut Iha
     let mut name_buf = SmallVec::<[u8; 64]>::new();
     let c_name = str_to_c_vec(name, &mut name_buf);
     IupSetAttributeHandle(ih, c_name, value);
+}
+
+pub unsafe fn set_handle(name: &str, ih: *mut Ihandle) {
+    let mut name_buf = SmallVec::<[u8; 64]>::new();
+    let c_name = str_to_c_vec(name, &mut name_buf);
+    IupSetHandle(c_name, ih);
 }
 
 pub unsafe fn reset_attribute(ih: *mut Ihandle, name: &str) {
@@ -105,6 +112,16 @@ pub fn get_int_int_attribute(handle: *mut Ihandle, name: &str) -> (i32, i32) {
     }
 }
 
+thread_local!(static UNIQUE_ATTRIBUTE_NAME_COUNTER: Cell<u32> = Cell::new(0));
+
+fn get_unique_attribute_name() -> String {
+    UNIQUE_ATTRIBUTE_NAME_COUNTER.with(|cell| {
+        let counter = cell.get();
+        cell.set(counter + 1);
+        format!("CLEAR_COAT_UNIQUE_{}\0", counter)
+    })
+}
+
 
 pub trait ActiveAttribute : Control {
     fn active(&self) -> bool {
@@ -125,6 +142,126 @@ pub trait CanvasAttributes : Control {
     #[cfg(windows)]
     fn hwnd(&self) -> winapi::HDC {
         get_attribute_ptr(self.handle(), "HWND\0") as winapi::HDC
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum Cursor {
+    // Loading cursors from application resources is purposefully not supported, as doing that
+    // is more platform-specific and is unnecessary when you can create and use an `Image`.
+    None,
+    Arrow,
+    Busy,
+    Cross,
+    Hand,
+    Help,
+    Move,
+    //Pen,
+    ResizeN,
+    ResizeS,
+    ResizeNS,
+    ResizeW,
+    ResizeE,
+    ResizeWE,
+    ResizeNE,
+    ResizeSW,
+    ResizeNW,
+    ResizeSE,
+    Text,
+    /// Windows only
+    AppStarting,
+    /// Windows only
+    No,
+    UpArrow,
+    // TODO: once images are wrapped, be able to pass one into set_cursor
+    // set_cursor would assign it a random name, and assign that name to the CURSOR attribute
+    // It also must add_extra_ref to the image
+    //Image(&Image),
+    Image,
+}
+
+impl Cursor {
+    fn from_str(s: &str) -> Cursor {
+        match s {
+            "NONE" => Cursor::None,
+            "ARROW" => Cursor::Arrow,
+            "BUSY" => Cursor::Busy,
+            "CROSS" => Cursor::Cross,
+            "HAND" => Cursor::Hand,
+            "HELP" => Cursor::Help,
+            "MOVE" => Cursor::Move,
+            "RESIZE_N" => Cursor::ResizeN,
+            "RESIZE_S" => Cursor::ResizeS,
+            "RESIZE_NS" => Cursor::ResizeNS,
+            "RESIZE_W" => Cursor::ResizeW,
+            "RESIZE_E" => Cursor::ResizeE,
+            "RESIZE_WE" => Cursor::ResizeWE,
+            "RESIZE_NE" => Cursor::ResizeNE,
+            "RESIZE_SW" => Cursor::ResizeSW,
+            "RESIZE_NW" => Cursor::ResizeNW,
+            "RESIZE_SE" => Cursor::ResizeSE,
+            "TEXT" => Cursor::Text,
+            "APPSTARTING" => Cursor::AppStarting,
+            "NO" => Cursor::No,
+            "UPARROW" => Cursor::UpArrow,
+            _ => {
+                unimplemented!(); // TODO: Image
+            },
+        }
+    }
+
+    fn to_str(self) -> Cow<'static, str> {
+        match self {
+            Cursor::None => "NONE\0".into(),
+            Cursor::Arrow => "ARROW\0".into(),
+            Cursor::Busy => "BUSY\0".into(),
+            Cursor::Cross => "CROSS\0".into(),
+            Cursor::Hand => "HAND\0".into(),
+            Cursor::Help => "HELP\0".into(),
+            Cursor::Move => "MOVE\0".into(),
+            Cursor::ResizeN => "RESIZE_N\0".into(),
+            Cursor::ResizeS => "RESIZE_S\0".into(),
+            Cursor::ResizeNS => "RESIZE_NS\0".into(),
+            Cursor::ResizeW => "RESIZE_W\0".into(),
+            Cursor::ResizeE => "RESIZE_E\0".into(),
+            Cursor::ResizeWE => "RESIZE_WE\0".into(),
+            Cursor::ResizeNE => "RESIZE_NE\0".into(),
+            Cursor::ResizeSW => "RESIZE_SW\0".into(),
+            Cursor::ResizeNW => "RESIZE_NW\0".into(),
+            Cursor::ResizeSE => "RESIZE_SE\0".into(),
+            Cursor::Text => "TEXT\0".into(),
+            Cursor::AppStarting => "APPSTARTING\0".into(),
+            Cursor::No => "NO\0".into(),
+            Cursor::UpArrow => "UPARROW\0".into(),
+            Cursor::Image => {
+                unsafe {
+                    let img: *mut Ihandle = ::std::ptr::null_mut(); // TODO:
+                    let curr_name = IupGetName(img);
+                    if !curr_name.is_null() {
+                        CStr::from_ptr(curr_name).to_string_lossy().into_owned().into()
+                    } else {
+                        let new_name = get_unique_attribute_name();
+                        set_handle(&new_name, img);
+                        new_name.into()
+                    }
+                }
+            },
+        }
+    }
+}
+
+pub trait CursorAttribute : Control {
+    fn cursor(&self) -> Cursor {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "CURSOR\0");
+            Cursor::from_str(&s)
+        }
+    }
+
+    fn set_cursor(&self, cursor: Cursor) -> &Self {
+        let s = cursor.to_str();
+        set_str_attribute(self.handle(), "CURSOR\0", &s);
+        self
     }
 }
 
