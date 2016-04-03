@@ -89,6 +89,7 @@ pub mod common_attrs_cbs {
         ValueChangedCallback,
         CanvasActionArgs,
         MotionArgs,
+        WheelArgs,
         CanvasCallbacks,
         ResizeCallback,
     };

@@ -553,6 +553,15 @@ pub struct MotionArgs {
     _dummy: (),
 }
 
+#[derive(Clone)]
+pub struct WheelArgs {
+    pub delta: f32,
+    pub x: i32,
+    pub y: i32,
+    pub status: KeyboardMouseStatus,
+    _dummy: (),
+}
+
 impl_callbacks! {
     trait CanvasCallbacks {
         "ACTION\0" => action_event {
@@ -604,6 +613,29 @@ impl_callbacks! {
                     }
                 }
                 action.to_int()
+            })
+        }
+
+        "WHEEL_CB\0" => wheel_event {
+            WHEEL_CALLBACKS<FnMut(&WheelArgs), WheelToken>
+        }
+        unsafe extern fn wheel_cb(ih: *mut Ihandle,
+                                  delta: c_float,
+                                  x: c_int,
+                                  y: c_int,
+                                  status: *mut c_char) -> c_int {
+            with_callbacks(ih, &WHEEL_CALLBACKS, |cbs| {
+                let args = WheelArgs {
+                    delta: delta,
+                    x: x,
+                    y: y,
+                    status: KeyboardMouseStatus::from_cstr(status),
+                    _dummy: (),
+                };
+                for cb in cbs {
+                    (&mut *cb.1.borrow_mut())(&args);
+                }
+                IUP_DEFAULT
             })
         }
     }
