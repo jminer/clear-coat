@@ -75,6 +75,7 @@ pub use callbacks::{CallbackAction, Event};
 pub mod common_attrs_cbs {
     pub use attributes::{
         ActiveAttribute,
+        CanFocusAttribute,
         Cursor,
         CursorAttribute,
         MinMaxSizeAttribute,

@@ -16,6 +16,7 @@ use super::{
 };
 use super::attributes::{
     ActiveAttribute,
+    CanFocusAttribute,
     MinMaxSizeAttribute,
     TipAttribute,
     VisibleAttribute,
@@ -112,6 +113,7 @@ impl Text {
 impl_control_traits!(Text);
 
 impl ActiveAttribute for Text {}
+impl CanFocusAttribute for Text {}
 impl MinMaxSizeAttribute for Text {}
 impl TipAttribute for Text {}
 impl VisibleAttribute for Text {}

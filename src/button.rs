@@ -16,6 +16,7 @@ use super::{
 };
 use super::attributes::{
     ActiveAttribute,
+    CanFocusAttribute,
     MinMaxSizeAttribute,
     TipAttribute,
     TitleAttribute,
@@ -73,6 +74,7 @@ impl Button {
 impl_control_traits!(Button);
 
 impl ActiveAttribute for Button {}
+impl CanFocusAttribute for Button {}
 impl MinMaxSizeAttribute for Button {}
 impl TipAttribute for Button {}
 impl TitleAttribute for Button {}

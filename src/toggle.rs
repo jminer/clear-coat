@@ -15,6 +15,7 @@ use super::{
 };
 use super::attributes::{
     ActiveAttribute,
+    CanFocusAttribute,
     MinMaxSizeAttribute,
     TipAttribute,
     TitleAttribute,
@@ -47,6 +48,7 @@ impl Toggle {
 impl_control_traits!(Toggle);
 
 impl ActiveAttribute for Toggle {}
+impl CanFocusAttribute for Toggle {}
 impl MinMaxSizeAttribute for Toggle {}
 impl TipAttribute for Toggle {}
 impl TitleAttribute for Toggle {}

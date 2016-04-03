@@ -15,6 +15,7 @@ pub use super::{
 };
 pub use super::attributes::{
     ActiveAttribute,
+    CanFocusAttribute,
     CanvasAttributes,
     CursorAttribute,
     MinMaxSizeAttribute,

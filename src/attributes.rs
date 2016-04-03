@@ -145,6 +145,19 @@ pub trait CanvasAttributes : Control {
     }
 }
 
+pub trait CanFocusAttribute : Control {
+    fn can_focus(&self) -> bool {
+        unsafe {
+            get_str_attribute_slice(self.handle(), "CANFOCUS\0") == "YES"
+        }
+    }
+
+    fn set_can_focus(&self, can_focus: bool) -> &Self {
+        set_str_attribute(self.handle(), "CANFOCUS\0", if can_focus { "YES\0" } else { "NO\0" });
+        self
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Cursor {
     // Loading cursors from application resources is purposefully not supported, as doing that
