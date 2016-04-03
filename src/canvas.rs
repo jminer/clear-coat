@@ -19,6 +19,9 @@ impl Canvas {
         }
     }
 
+    pub fn draw_size(&self) -> (i32, i32) {
+        get_int_int_attribute(self.handle(), "DRAWSIZE\0")
+    }
 }
 
 impl_control_traits!(Canvas);

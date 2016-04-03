@@ -14,6 +14,7 @@ pub use super::{
     UnwrapHandle,
 };
 pub use super::attributes::{
+    get_int_int_attribute,
     ActiveAttribute,
     CanFocusAttribute,
     CanvasAttributes,
