@@ -608,3 +608,19 @@ impl_callbacks! {
         }
     }
 }
+
+impl_callbacks! {
+    trait ResizeCallback {
+        "RESIZE_CB\0" => resize_event {
+            RESIZE_CALLBACKS<FnMut(i32, i32), ResizeToken>
+        }
+        unsafe extern fn resize_cb(ih: *mut Ihandle, width: c_int, height: c_int) -> c_int {
+            with_callbacks(ih, &RESIZE_CALLBACKS, |cbs| {
+                for cb in cbs {
+                    (&mut *cb.1.borrow_mut())(width, height);
+                }
+                IUP_DEFAULT
+            })
+        }
+    }
+}

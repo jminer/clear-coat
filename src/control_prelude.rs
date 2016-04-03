@@ -30,6 +30,7 @@ pub use super::callbacks::{
     ButtonCallback,
     ValueChangedCallback,
     CanvasCallbacks,
+    ResizeCallback,
     Event,
     Token,
 };

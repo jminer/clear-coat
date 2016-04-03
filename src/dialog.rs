@@ -35,6 +35,7 @@ use super::callbacks::{
     MenuCommonCallbacks,
     GetKillFocusCallbacks,
     EnterLeaveWindowCallbacks,
+    ResizeCallback,
     with_callbacks,
 };
 use super::containers::Container;
@@ -183,3 +184,4 @@ impl VisibleAttribute for Dialog {}
 impl MenuCommonCallbacks for Dialog {}
 impl GetKillFocusCallbacks for Dialog {}
 impl EnterLeaveWindowCallbacks for Dialog {}
+impl ResizeCallback for Dialog {}
