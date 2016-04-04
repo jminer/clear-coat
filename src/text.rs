@@ -18,9 +18,9 @@ use super::attributes::{
     ActiveAttribute,
     CanFocusAttribute,
     MinMaxSizeAttribute,
+    ScrollbarAttribute,
     TipAttribute,
     VisibleAttribute,
-    str_to_c_vec,
     get_str_attribute,
     get_str_attribute_slice,
     set_str_attribute,
@@ -115,6 +115,7 @@ impl_control_traits!(Text);
 impl ActiveAttribute for Text {}
 impl CanFocusAttribute for Text {}
 impl MinMaxSizeAttribute for Text {}
+impl ScrollbarAttribute for Text {}
 impl TipAttribute for Text {}
 impl VisibleAttribute for Text {}
 

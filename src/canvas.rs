@@ -31,6 +31,7 @@ impl CanFocusAttribute for Canvas {}
 impl CanvasAttributes for Canvas {}
 impl CursorAttribute for Canvas {}
 impl MinMaxSizeAttribute for Canvas {}
+impl ScrollbarAttribute for Canvas {}
 impl TipAttribute for Canvas {}
 impl VisibleAttribute for Canvas {}
 

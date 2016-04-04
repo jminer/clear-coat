@@ -20,6 +20,7 @@ pub use super::attributes::{
     CanvasAttributes,
     CursorAttribute,
     MinMaxSizeAttribute,
+    ScrollbarAttribute,
     TipAttribute,
     TitleAttribute,
     VisibleAttribute,

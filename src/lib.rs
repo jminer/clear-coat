@@ -79,6 +79,7 @@ pub mod common_attrs_cbs {
         Cursor,
         CursorAttribute,
         MinMaxSizeAttribute,
+        ScrollbarAttribute,
         TipAttribute,
         TitleAttribute,
         VisibleAttribute,

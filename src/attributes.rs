@@ -143,6 +143,128 @@ pub trait CanvasAttributes : Control {
     fn hwnd(&self) -> winapi::HDC {
         get_attribute_ptr(self.handle(), "HWND\0") as winapi::HDC
     }
+
+    fn dx(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "DX\0");
+            s.parse().expect("could not convert DX to a number")
+        }
+    }
+
+    fn set_dx(&self, dx: f32) -> &Self {
+        set_str_attribute(self.handle(), "DX\0", &dx.to_string());
+        self
+    }
+
+    fn dy(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "DY\0");
+            s.parse().expect("could not convert DY to a number")
+        }
+    }
+
+    fn set_dy(&self, dy: f32) -> &Self {
+        set_str_attribute(self.handle(), "DY\0", &dy.to_string());
+        self
+    }
+
+    fn pos_x(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "POSX\0");
+            s.parse().expect("could not convert POSX to a number")
+        }
+    }
+
+    fn set_pos_x(&self, pos_x: f32) -> &Self {
+        set_str_attribute(self.handle(), "POSX\0", &pos_x.to_string());
+        self
+    }
+
+    fn pos_y(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "POSY\0");
+            s.parse().expect("could not convert POSY to a number")
+        }
+    }
+
+    fn set_pos_y(&self, pos_y: f32) -> &Self {
+        set_str_attribute(self.handle(), "POSY\0", &pos_y.to_string());
+        self
+    }
+
+    fn x_min(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "XMIN\0");
+            s.parse().expect("could not convert XMIN to a number")
+        }
+    }
+
+    fn set_x_min(&self, x_min: f32) -> &Self {
+        set_str_attribute(self.handle(), "XMIN\0", &x_min.to_string());
+        self
+    }
+
+    fn x_max(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "XMAX\0");
+            s.parse().expect("could not convert XMAX to a number")
+        }
+    }
+
+    fn set_x_max(&self, x_max: f32) -> &Self {
+        set_str_attribute(self.handle(), "XMAX\0", &x_max.to_string());
+        self
+    }
+
+    fn y_min(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "YMIN\0");
+            s.parse().expect("could not convert YMIN to a number")
+        }
+    }
+
+    fn set_y_min(&self, y_min: f32) -> &Self {
+        set_str_attribute(self.handle(), "YMIN\0", &y_min.to_string());
+        self
+    }
+
+    fn y_max(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "YMAX\0");
+            s.parse().expect("could not convert YMAX to a number")
+        }
+    }
+
+    fn set_y_max(&self, y_max: f32) -> &Self {
+        set_str_attribute(self.handle(), "YMAX\0", &y_max.to_string());
+        self
+    }
+
+    fn line_x(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "LINEX\0");
+            s.parse().expect("could not convert LINEX to a number")
+        }
+    }
+
+    fn set_line_x(&self, linex: f32) -> &Self {
+        set_str_attribute(self.handle(), "LINEX\0", &linex.to_string());
+        self
+    }
+
+    fn line_y(&self) -> f32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "LINEY\0");
+            s.parse().expect("could not convert LINEY to a number")
+        }
+    }
+
+    fn set_line_y(&self, line_y: f32) -> &Self {
+        set_str_attribute(self.handle(), "LINEY\0", &line_y.to_string());
+        self
+    }
+
+    // TODO: XAUTOHIDE, YAUTOHIDE, XHIDDEN, YHIDDEN, and others for ScrollbarAttribute
 }
 
 pub trait CanFocusAttribute : Control {
@@ -308,6 +430,48 @@ pub trait OrientationAttribute : Control {
 
     fn set_orientation(&self, orientation: ::Orientation) {
         set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
+    }
+}
+
+pub enum Scrollbar {
+    Vertical,
+    Horizontal,
+    Both,
+    None,
+}
+
+impl Scrollbar {
+    fn from_str(s: &str) -> Scrollbar {
+        match s {
+            "VERTICAL" => Scrollbar::Vertical,
+            "HORIZONTAL" => Scrollbar::Horizontal,
+            "YES" => Scrollbar::Both,
+            "NO" => Scrollbar::None,
+            _ => panic!("unknown Scrollbar"),
+        }
+    }
+
+    fn to_str(self) -> &'static str {
+        match self {
+            Scrollbar::Vertical => "VERTICAL\0",
+            Scrollbar::Horizontal => "HORIZONTAL\0",
+            Scrollbar::Both => "YES\0",
+            Scrollbar::None => "NO\0",
+        }
+    }
+}
+
+pub trait ScrollbarAttribute : Control {
+    fn scrollbar(&self) -> Scrollbar {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "SCROLLBAR\0");
+            Scrollbar::from_str(&s)
+        }
+    }
+
+    fn set_scrollbar(&self, scrollbar: Scrollbar) -> &Self {
+        set_str_attribute(self.handle(), "SCROLLBAR\0", scrollbar.to_str());
+        self
     }
 }
 
