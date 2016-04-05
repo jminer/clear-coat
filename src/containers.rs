@@ -5,15 +5,7 @@
  * modified, or distributed except according to those terms.
  */
 
-use std::ptr;
-use iup_sys::*;
-use super::{Control, UnwrapHandle};
-use super::handle_rc::HandleRc;
-use super::attributes::{
-    OrientationAttribute,
-    set_str_attribute,
-    get_str_attribute_slice,
-};
+use super::control_prelude::*;
 
 pub trait Container : Control {
     fn append(&self, new_child: &Control) -> Result<(), ()> {

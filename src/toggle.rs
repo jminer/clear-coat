@@ -5,31 +5,7 @@
  * modified, or distributed except according to those terms.
  */
 
-use std::ops::CoerceUnsized;
-use std::ptr;
-use iup_sys::*;
-use libc::c_int;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    CanFocusAttribute,
-    MinMaxSizeAttribute,
-    TipAttribute,
-    TitleAttribute,
-    VisibleAttribute,
-};
-use super::callbacks::{
-    CallbackRegistry,
-    with_callbacks,
-    MenuCommonCallbacks,
-    EnterLeaveWindowCallbacks,
-    Event,
-    Token,
-};
-use super::handle_rc::HandleRc;
+use super::control_prelude::*;
 
 #[derive(Clone)]
 pub struct Toggle(HandleRc);

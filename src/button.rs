@@ -5,35 +5,7 @@
  * modified, or distributed except according to those terms.
  */
 
-use std::ptr;
-use std::ops::CoerceUnsized;
-use iup_sys::*;
-use libc::{c_char, c_int};
-use smallvec::SmallVec;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    CanFocusAttribute,
-    MinMaxSizeAttribute,
-    TipAttribute,
-    TitleAttribute,
-    VisibleAttribute,
-    str_to_c_vec,
-};
-use super::callbacks::{
-    Event,
-    Token,
-    CallbackRegistry,
-    simple_callback,
-    MenuCommonCallbacks,
-    GetKillFocusCallbacks,
-    EnterLeaveWindowCallbacks,
-    ButtonCallback,
-};
-use super::handle_rc::HandleRc;
+use super::control_prelude::*;
 
 #[derive(Clone)]
 pub struct Button(HandleRc);

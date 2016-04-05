@@ -5,33 +5,11 @@
  * modified, or distributed except according to those terms.
  */
 
-
-use std::ptr;
-use std::ops::CoerceUnsized;
-use iup_sys::*;
-use libc::c_int;
-use smallvec::SmallVec;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    TitleAttribute,
-    str_to_c_vec,
-};
-use super::callbacks::{
-    Event,
-    Token,
-    CallbackRegistry,
-    simple_callback,
-    MenuCommonCallbacks,
-};
+use super::control_prelude::*;
 use super::containers::{
     Container,
     wrapper_to_handle_vec,
 };
-use super::handle_rc::HandleRc;
 
 /// Implemented by controls that can be added as children of a `Menu`.
 pub trait MenuSubitem : Control {

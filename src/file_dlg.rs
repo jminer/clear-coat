@@ -5,24 +5,11 @@
  * modified, or distributed except according to those terms.
  */
 
+use super::control_prelude::*;
 use std::borrow::Cow;
 use std::ffi::CStr;
 use std::path::{PathBuf, Path};
-use iup_sys::*;
-use super::{
-    Control,
-    UnwrapHandle,
-    ScreenPosition,
-    Popup,
-};
-use super::attributes::{
-    TitleAttribute,
-    get_attribute_ptr,
-    get_str_attribute,
-    get_str_attribute_slice,
-    set_str_attribute,
-};
-use super::handle_rc::HandleRc;
+use super::Popup;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FileDialogType {

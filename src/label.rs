@@ -5,28 +5,7 @@
  * modified, or distributed except according to those terms.
  */
 
-use std::ptr;
-use iup_sys::*;
-use smallvec::SmallVec;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    MinMaxSizeAttribute,
-    TipAttribute,
-    TitleAttribute,
-    VisibleAttribute,
-    str_to_c_vec,
-    set_str_attribute,
-    get_str_attribute_slice,
-};
-use super::callbacks::{
-    MenuCommonCallbacks,
-    EnterLeaveWindowCallbacks,
-};
-use super::handle_rc::HandleRc;
+use super::control_prelude::*;
 
 #[derive(Clone)]
 pub struct Label(HandleRc);

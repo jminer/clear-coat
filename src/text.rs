@@ -5,37 +5,8 @@
  * modified, or distributed except according to those terms.
  */
 
+use super::control_prelude::*;
 use std::borrow::Cow;
-use std::ops::CoerceUnsized;
-use std::ptr;
-use iup_sys::*;
-use libc::c_int;
-use super::{
-    Control,
-    UnwrapHandle,
-};
-use super::attributes::{
-    ActiveAttribute,
-    CanFocusAttribute,
-    MinMaxSizeAttribute,
-    ScrollbarAttribute,
-    TipAttribute,
-    VisibleAttribute,
-    get_str_attribute,
-    get_str_attribute_slice,
-    set_str_attribute,
-};
-use super::callbacks::{
-    CallbackRegistry,
-    with_callbacks,
-    MenuCommonCallbacks,
-    EnterLeaveWindowCallbacks,
-    GetKillFocusCallbacks,
-    ValueChangedCallback,
-    Event,
-    Token,
-};
-use super::handle_rc::HandleRc;
 
 #[derive(Clone)]
 pub struct Text(HandleRc);

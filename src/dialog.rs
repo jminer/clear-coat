@@ -5,39 +5,13 @@
  * modified, or distributed except according to those terms.
  */
 
+use super::control_prelude::*;
 use std::ffi::CStr;
 use std::mem;
-use std::ops::CoerceUnsized;
-use std::ptr;
-use iup_sys::*;
-use libc::{c_int};
 use super::{
-    Control,
-    UnwrapHandle,
     ScreenPosition,
     Menu,
     Popup,
-};
-use super::attributes::{
-    ActiveAttribute,
-    CursorAttribute,
-    MinMaxSizeAttribute,
-    TipAttribute,
-    TitleAttribute,
-    VisibleAttribute,
-    set_attribute_handle,
-    reset_attribute,
-};
-use super::callbacks::{
-    CallbackAction,
-    Event,
-    Token,
-    CallbackRegistry,
-    MenuCommonCallbacks,
-    GetKillFocusCallbacks,
-    EnterLeaveWindowCallbacks,
-    ResizeCallback,
-    with_callbacks,
 };
 use super::containers::Container;
 use super::extra_refs::{
@@ -45,7 +19,6 @@ use super::extra_refs::{
     add_extra_ref,
     remove_extra_ref,
 };
-use super::handle_rc::HandleRc;
 
 #[derive(Clone)]
 pub struct Dialog(HandleRc);
