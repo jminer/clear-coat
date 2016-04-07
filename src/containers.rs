@@ -8,6 +8,8 @@
 use super::control_prelude::*;
 
 pub trait Container : Control {
+    /// Warning: Since children are stored as a linked list, appending a control is O(n) where
+    /// n is the number of children.
     fn append(&self, new_child: &Control) -> Result<(), ()> {
         unsafe {
             if IupAppend(self.handle(), new_child.handle()) == ptr::null_mut() {
@@ -18,6 +20,8 @@ pub trait Container : Control {
         }
     }
 
+    /// Warning: Since children are stored as a linked list, inserting a control is O(n) where
+    /// n is the number of children before `ref_child`.
     fn insert(&self, ref_child: Option<&Control>, new_child: &Control) -> Result<(), ()> {
         unsafe {
             let ref_child = ref_child.map(|c| c.handle()).unwrap_or(ptr::null_mut());
@@ -31,7 +35,8 @@ pub trait Container : Control {
 
     /// Returns the number of children of the specified control.
     ///
-    /// Warning: Since children are stored as a linked list, getting the count is O(n).
+    /// Warning: Since children are stored as a linked list, getting the count is O(n) where
+    /// n is the number of children.
     fn child_count(&self) -> usize {
         unsafe {
             IupGetChildCount(self.handle()) as usize

@@ -208,6 +208,8 @@ fn check_thread() {
 pub unsafe trait Control {
     fn handle(&self) -> *mut Ihandle;
 
+    /// Warning: Since children are stored as a linked list, detaching a control is O(n) where
+    /// n is the number of siblings before this control.
     fn detach(&self) {
         unsafe { IupDetach(self.handle()); }
     }
