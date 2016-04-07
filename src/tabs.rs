@@ -54,3 +54,12 @@ impl_control_traits!(Tabs);
 impl Container for Tabs {}
 impl NonDialogContainer for Tabs {}
 
+impl ActiveAttribute for Tabs {}
+impl MinMaxSizeAttribute for Tabs {}
+impl TipAttribute for Tabs {}
+impl VisibleAttribute for Tabs {}
+
+impl MenuCommonCallbacks for Tabs {}
+impl GetKillFocusCallbacks for Tabs {}
+impl EnterLeaveWindowCallbacks for Tabs {}
+
