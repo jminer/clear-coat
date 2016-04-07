@@ -68,6 +68,18 @@ impl Text {
         self
     }
 
+    pub fn visible_columns(&self) -> i32 {
+        unsafe {
+            let val = get_str_attribute_slice(self.handle(), "VISIBLECOLUMNS\0");
+            val.parse().expect("could not convert VISIBLECOLUMNS to an integer")
+        }
+    }
+
+    pub fn set_visible_columns(&self, columns: i32) -> &Self {
+        set_str_attribute(self.handle(), "VISIBLECOLUMNS\0", &columns.to_string());
+        self
+    }
+
     pub fn visible_lines(&self) -> i32 {
         unsafe {
             let val = get_str_attribute_slice(self.handle(), "VISIBLELINES\0");
