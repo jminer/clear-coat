@@ -38,7 +38,7 @@ impl Tabs {
         self
     }
 
-    pub fn add_tabs(&self, info: &[TabInfo]) -> &Self {
+    pub fn append_tabs(&self, info: &[TabInfo]) -> &Self {
         let mut index = self.child_count();
         for ti in info {
             self.append(ti.control).expect("failed to append tab");
