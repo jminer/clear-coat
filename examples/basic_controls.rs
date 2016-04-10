@@ -23,7 +23,13 @@ fn main() {
     button2.set_title("Print text");
 
     let button3 = Button::new();
-    button3.set_title("Hi");
+    button3.set_title("Alarm");
+    button3.action_event().add(|| {
+        let r = AlarmBuilder::new("Title", "Make sure you know what you're doing...", "OK")
+                .add_button("Cancel")
+                .popup();
+        println!("{}", r);
+    });
     let button4 = Button::new();
     button4.set_title("Hi");
     let text_box = Text::new();

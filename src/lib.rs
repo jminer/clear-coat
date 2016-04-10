@@ -47,6 +47,7 @@ mod containers;
 
 mod control_prelude;
 
+mod alarm_builder;
 mod attributes;
 mod button;
 mod canvas;
@@ -63,6 +64,7 @@ mod extra_refs;
 
 pub use dialog::{Dialog, ShowCallbackToken, ShowState};
 pub use file_dlg::{FileDlg, FileDialogType, FileExtFilter};
+pub use alarm_builder::{AlarmResult, AlarmBuilder};
 pub use button::Button;
 pub use canvas::{Canvas};
 pub use frame::Frame;
