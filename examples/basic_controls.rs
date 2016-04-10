@@ -49,12 +49,12 @@ fn main() {
 
     // TODO: there is handle::is_null()
     // TODO: have setters return self, so that hbox and vbox, etc. can be configured without being stored in a variable?
-    let dialog = Dialog::with_child(&vbox!(
+    let dialog = Dialog::with_child(vbox!(
         button1, fill!(),
         hbox!(fill!(), button3, button4),
         text_box,
         check_box,
-        button2));
+        button2).set_top_level_margin_and_gap());
     // unsafe {
     //     let mut subsubmenu = vec![IupItem("Foo\0".as_ptr() as *const i8, ptr::null_mut()), ptr::null_mut()];
     //     let mut submenu = vec![

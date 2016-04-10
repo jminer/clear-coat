@@ -52,6 +52,13 @@ pub trait NonDialogContainer : Container {
     }
 }
 
+const DEFAULT_GAP: &'static str = "6\0";
+
+fn set_top_level_margin_and_gap(ih: *mut Ihandle) {
+    set_str_attribute(ih, "NMARGIN\0", "6x6\0");
+    set_str_attribute(ih, "GAP\0", DEFAULT_GAP);
+}
+
 
 pub fn wrapper_to_handle_vec<T: ::Control + ?Sized>(controls: &[&T]) -> Vec<*mut Ihandle>
 {
@@ -106,6 +113,11 @@ impl Hbox {
         let handle = IupHboxv(children);
         Hbox(HandleRc::new(handle))
     }
+
+    pub fn set_top_level_margin_and_gap(&self) -> &Self {
+        set_top_level_margin_and_gap(self.handle());
+        self
+    }
 }
 
 impl_control_traits!(Hbox);
@@ -155,6 +167,11 @@ impl Vbox {
     pub unsafe fn from_handles(children: *mut *mut Ihandle) -> Vbox {
         let handle = IupVboxv(children);
         Vbox(HandleRc::new(handle))
+    }
+
+    pub fn set_top_level_margin_and_gap(&self) -> &Self {
+        set_top_level_margin_and_gap(self.handle());
+        self
     }
 }
 
@@ -211,6 +228,12 @@ impl GridBox {
     pub unsafe fn from_handles(children: *mut *mut Ihandle) -> GridBox {
         let handle = IupGridBoxv(children);
         GridBox(HandleRc::new(handle))
+    }
+
+    pub fn set_top_level_margin_and_gap(&self) -> &Self {
+        set_str_attribute(self.handle(), "GAPLIN\0", DEFAULT_GAP);
+        set_str_attribute(self.handle(), "GAPCOL\0", DEFAULT_GAP);
+        self
     }
 
     pub fn alignment_lin(&self, line: u32) -> ::VAlignment {

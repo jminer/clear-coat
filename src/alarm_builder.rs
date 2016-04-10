@@ -68,14 +68,13 @@ impl<'t, 'm, 'b> AlarmBuilder<'t, 'm, 'b> {
             });
             button_box.append(&button).expect("failed to build alarm button box");
         }
+        set_str_attribute(button_box.handle(), "GAP\0", "5");
 
-        dialog.append(
-            &vbox!(
+        dialog.append(vbox!(
                 Label::with_title(self.message),
                 fill!(),
                 button_box,
-            )
-        ).expect("failed to build alarm dialog");
+            ).set_top_level_margin_and_gap()).expect("failed to build alarm dialog");
         dialog.set_title(self.title);
         dialog.popup(ScreenPosition::CenterParent, ScreenPosition::CenterParent)
                 .expect("failed to show alarm dialog");
