@@ -25,8 +25,10 @@ fn main() {
     let button3 = Button::new();
     button3.set_title("Alarm");
     button3.action_event().add(|| {
-        let r = AlarmBuilder::new("Title", "Make sure you know what you're doing...", "OK")
-                .add_button("Cancel")
+        let r = AlarmBuilder::new("Title", "Do you really know what you're doing?", "Yes")
+                .add_button("No")
+                .default_enter(2)
+                .default_esc(1)
                 .popup();
         println!("{}", r);
     });

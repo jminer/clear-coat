@@ -9,6 +9,7 @@ use super::control_prelude::*;
 use std::ffi::CStr;
 use std::mem;
 use super::{
+    Button,
     ScreenPosition,
     Menu,
     Popup,
@@ -65,6 +66,28 @@ impl Dialog {
     pub fn refresh(&self) {
         unsafe {
             IupRefresh(self.handle());
+        }
+    }
+
+    pub fn set_start_focus(&self, start_focus: &Control) -> &Self {
+        unsafe {
+            set_attribute_handle(self.handle(), "STARTFOCUS\0", start_focus.handle());
+            self
+        }
+    }
+
+    pub fn set_default_enter(&self, default_enter: &Button) -> &Self {
+        unsafe {
+            println!("setting default to {:?}", get_str_attribute(default_enter.handle(), "TITLE"));
+            set_attribute_handle(self.handle(), "DEFAULTENTER\0", default_enter.handle());
+            self
+        }
+    }
+
+    pub fn set_default_esc(&self, default_esc: &Button) -> &Self {
+        unsafe {
+            set_attribute_handle(self.handle(), "DEFAULTESC\0", default_esc.handle());
+            self
         }
     }
 
