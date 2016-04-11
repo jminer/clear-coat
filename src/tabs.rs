@@ -17,6 +17,20 @@ pub struct TabInfo<'a, 'b> {
     control: &'b Control,
 }
 
+impl<'a, 'b> TabInfo<'a, 'b> {
+    pub fn new(control: &'b Control) -> Self {
+        TabInfo {
+            title: "",
+            control: control,
+        }
+    }
+
+    pub fn title(&mut self, title: &'a str) -> &mut Self {
+        self.title = title;
+        self
+    }
+}
+
 #[derive(Clone)]
 pub struct Tabs(HandleRc);
 
@@ -38,7 +52,7 @@ impl Tabs {
         self
     }
 
-    pub fn append_tabs(&self, info: &[TabInfo]) -> &Self {
+    pub fn append_tabs(&self, info: &[&TabInfo]) -> &Self {
         let mut index = self.child_count();
         for ti in info {
             self.append(ti.control).expect("failed to append tab");
