@@ -6,11 +6,10 @@
 | **Dialogs**             |
 | Dialog                  |       |   •   |       |           |
 | FileDlg                 |       |       |   •   |           |
-| MessageDlg              |   •   |       |       |           |
 | ColorDlg                |   •   |       |       |           |
 | FontDlg                 |   •   |       |       |           |
 | ProgressDlg             |   •   |       |       |           |
-| Alarm                   |   •   |       |       |           |
+| Alarm                   |       |   •   |       |           |
 | GetParam                |   •   |       |       |           |
 | Message                 |   •   |       |       |           |
 | LayoutDialog            |   •   |       |       |           |
@@ -31,14 +30,14 @@
 | **Standard**            |
 | Button                  |       |   •   |       |           |
 | Calendar                |   •   |       |       |           |
-| Canvas                  |   •   |       |       |           |
+| Canvas                  |       |   •   |       |           |
 | DatePick                |   •   |       |       |           |
 | Label                   |       |   •   |       |           |
 | Link                    |   •   |       |       |           |
 | List                    |   •   |       |       |           |
 | ProgressBar             |   •   |       |       |           |
-| Text                    |   •   |       |       |           |
-| Toggle                  |   •   |       |       |           |
+| Text                    |       |   •   |       |           |
+| Toggle                  |       |   •   |       |           |
 | Tree                    |   •   |       |       |           |
 | Val                     |   •   |       |       |           |
 | **Menus**               |
@@ -59,6 +58,7 @@ These I don't plan to implement, and I'm not sure I want in the library:
 - FlatButton (use a regular button that looks native)
 - GetText (overlap with other dialogs, modal, and limited)
 - ListDialog (modal and limited)
+- MessageDlg (overlap with Alarm and non-customizable button text, which is usually worse UX)
 - Sbox (I've never seen a program with one of these)
 - Spin and SpinBox (text boxes support spin controls)
 
