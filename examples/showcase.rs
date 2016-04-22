@@ -8,7 +8,11 @@
 #[macro_use]
 extern crate clear_coat;
 extern crate iup_sys;
+extern crate smallvec;
+
+use std::rc::Rc;
 use iup_sys::*;
+use smallvec::SmallVec;
 
 use clear_coat::*;
 use clear_coat::common_attrs_cbs::*;
@@ -25,6 +29,8 @@ impl CursorsCanvas {
     }
 }
 
+impl CursorAttribute for CursorsCanvas {}
+
 unsafe impl Control for CursorsCanvas {
     fn handle(&self) -> *mut Ihandle {
         self.canvas.handle()
@@ -32,8 +38,68 @@ unsafe impl Control for CursorsCanvas {
 }
 
 fn create_cursors_page() -> Box<Control> {
+    let cursors_canvas = Rc::new(CursorsCanvas::new());
+
+    let radios_info = [
+        ("None", Cursor::None),
+        ("Arrow", Cursor::Arrow),
+        ("Busy", Cursor::Busy),
+        ("Cross", Cursor::Cross),
+        ("Hand", Cursor::Hand),
+        ("Help", Cursor::Help),
+        ("Move", Cursor::Move),
+        ("ResizeN", Cursor::ResizeN),
+        ("ResizeS", Cursor::ResizeS),
+        ("ResizeNS", Cursor::ResizeNS),
+        ("ResizeW", Cursor::ResizeW),
+        ("ResizeE", Cursor::ResizeE),
+        ("ResizeWE", Cursor::ResizeWE),
+        ("ResizeNE", Cursor::ResizeNE),
+        ("ResizeSW", Cursor::ResizeSW),
+        ("ResizeNW", Cursor::ResizeNW),
+        ("ResizeSE", Cursor::ResizeSE),
+        ("Text", Cursor::Text),
+    ];
+
+    let mut radios = SmallVec::<[Toggle; 32]>::new();
+    for &(text, cur) in radios_info.iter() {
+        let toggle = Toggle::new();
+        toggle.set_title(text);
+        let cursors_canvas2 = cursors_canvas.clone();
+        toggle.action_event().add(move |checked| {
+            if checked { cursors_canvas2.set_cursor(cur); }
+        });
+        radios.push(toggle);
+    }
+
+    let grid = grid_box!(
+        &radios[0],
+        &radios[1],
+        &radios[2],
+        &radios[3],
+        &radios[4],
+        &radios[5],
+        &radios[6],
+        &radios[7],
+        &radios[8],
+        &radios[9],
+        &radios[10],
+        &radios[11],
+        &radios[12],
+        &radios[13],
+        &radios[14],
+        &radios[15],
+        &radios[16],
+        &radios[17],
+    );
+    grid.set_num_div(NumDiv::Fixed(2));
     let page = vbox!(
-        &CursorsCanvas::new()
+        &cursors_canvas,
+        hbox!(
+            fill!(),
+            &grid,
+            fill!(),
+        ),
     );
     Box::new(page)
 }
