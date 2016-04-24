@@ -8,7 +8,7 @@
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::CStr;
-use libc::{c_char, c_int, c_long};
+use libc::{c_char, c_int};
 use iup_sys::*;
 use smallvec::SmallVec;
 use winapi;

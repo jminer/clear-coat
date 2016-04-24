@@ -150,7 +150,7 @@ impl ShowState {
 callback_token!(ShowCallbackToken);
 thread_local!(
     static SHOW_CALLBACKS: CallbackRegistry<FnMut(ShowState) -> CallbackAction, ShowCallbackToken> =
-        CallbackRegistry::new("SHOW_CB", unsafe { mem::transmute::<_, Icallback>(show_cb) })
+        CallbackRegistry::new("SHOW_CB", unsafe { mem::transmute::<_, Icallback>(show_cb as usize) })
 );
 extern fn show_cb(ih: *mut Ihandle, state: c_int) -> c_int {
     with_callbacks(ih, &SHOW_CALLBACKS, |cbs| {

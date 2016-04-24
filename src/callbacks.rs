@@ -10,7 +10,7 @@ use std::cell::RefCell;
 use std::collections::{hash_map, HashMap};
 use std::marker::PhantomData;
 use std::ops::{CoerceUnsized};
-use std::panic::{self, RecoverSafe};
+use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 use std::thread::LocalKey;
 use libc::{c_int, c_char, c_float};
@@ -195,9 +195,9 @@ impl<F: ?Sized, T: Into<Token> + From<Token>> CallbackRegistry<F, T> {
     }
 }
 
-struct AssertRecoverSafeVal<T: ?Sized>(T);
+// struct AssertRecoverSafeVal<T: ?Sized>(T);
 
-impl<T: ?Sized> RecoverSafe for AssertRecoverSafeVal<T> {}
+// impl<T: ?Sized> RecoverSafe for AssertRecoverSafeVal<T> {}
 
 // Takes a function that takes one parameter that is a slice of (id, callback) tuples.
 pub fn with_callbacks<F, G: ?Sized, T>(ih: *mut Ihandle,
@@ -206,8 +206,8 @@ pub fn with_callbacks<F, G: ?Sized, T>(ih: *mut Ihandle,
                                        where F: FnOnce(&[(usize, Rc<RefCell<G>>)]) -> c_int,
                                              G: 'static,
                                              T: Into<Token> + From<Token> {
-    let h = AssertRecoverSafeVal(f);
-    let result = panic::recover(move || {
+    let h = AssertUnwindSafe(f);
+    let result = panic::catch_unwind(move || {
         reg.with(move |reg| {
             let cbs_rc = reg.callbacks.borrow().get(&ih).map(|cc| cc.vec.clone());
             if let Some(cbs) = cbs_rc {
@@ -295,7 +295,9 @@ macro_rules! impl_callbacks_inner {
                     callback_token!($token_name);
                     thread_local!(
                         static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
-                            CallbackRegistry::new($prop_name, unsafe { ::std::mem::transmute::<_, Icallback>($extern_fn_name) })
+                            CallbackRegistry::new($prop_name, unsafe {
+                                ::std::mem::transmute::<_, Icallback>($extern_fn_name as usize)
+                            })
                     );
 
                     unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {
@@ -338,7 +340,9 @@ macro_rules! impl_callbacks_inner {
                     callback_token!($token_name);
                     thread_local!(
                         static $hash_name: CallbackRegistry<$fn_ty, $token_name> =
-                            CallbackRegistry::new($prop_name, unsafe { ::std::mem::transmute::<_, Icallback>($extern_fn_name) })
+                            CallbackRegistry::new($prop_name, unsafe {
+                                ::std::mem::transmute::<_, Icallback>($extern_fn_name as usize)
+                            })
                     );
 
                     unsafe extern fn $extern_fn_name( $($extern_fn_params)* ) $(-> $ret_ty)* {

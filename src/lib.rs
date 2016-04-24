@@ -6,8 +6,6 @@
  */
 
 #![feature(coerce_unsized)]
-#![feature(std_panic)]
-#![feature(recover)]
 
 extern crate libc;
 extern crate iup_sys;
