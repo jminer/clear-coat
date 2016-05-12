@@ -51,6 +51,7 @@ mod button;
 mod canvas;
 mod frame;
 mod label;
+mod line_graph;
 mod menu;
 mod tabs;
 mod text;
