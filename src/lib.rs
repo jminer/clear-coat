@@ -239,6 +239,7 @@ pub unsafe trait Control {
         }
     }
 
+    /// Marks the control to be redrawn on a future main loop iteration.
     fn update(&self) {
         unsafe {
             IupUpdate(self.handle());
