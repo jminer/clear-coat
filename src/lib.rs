@@ -246,6 +246,9 @@ pub unsafe trait Control {
         }
     }
 
+    /// Immediately redraws the control and, if `include_children` is `true`, its children as well
+    /// (they will be redrawn before this method returns). Usually, it's better to use `update`
+    /// because it will batch redraws together, avoiding unnecessary work.
     fn redraw(&self, include_children: bool) {
         unsafe {
             IupRedraw(self.handle(), if include_children { 1 } else { 0 });
