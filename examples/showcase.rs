@@ -93,6 +93,7 @@ fn create_cursors_page() -> Box<Control> {
         &radios[17],
     );
     grid.set_num_div(NumDiv::Fixed(2));
+    grid.fit_all_to_children();
     let page = vbox!(
         &cursors_canvas,
         hbox!(
