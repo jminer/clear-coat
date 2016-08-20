@@ -21,7 +21,7 @@
 | GridBox                 |       |   •   |       |           |
 | HBox                    |       |   •   |       |           |
 | Normalizer              |   •   |       |       |           |
-| Radio                   |   •   |       |       |           |
+| Radio                   |       |   •   |       |           |
 | ScrollBox               |   •   |       |       |           |
 | Split                   |   •   |       |       |           |
 | Tabs                    |   •   |       |       |           |

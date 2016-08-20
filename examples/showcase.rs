@@ -98,7 +98,7 @@ fn create_cursors_page() -> Box<Control> {
         &cursors_canvas,
         hbox!(
             fill!(),
-            &grid,
+            Radio::with_child(&grid),
             fill!(),
         ),
     );
