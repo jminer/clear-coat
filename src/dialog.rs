@@ -136,6 +136,7 @@ impl ShowState {
         }
     }
 
+    #[cfg(for_future_use)] // silence dead_code warning (probably) the best way
     fn to_int(state: ShowState) -> c_int {
         match state {
             ShowState::Hide => IUP_HIDE,

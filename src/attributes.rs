@@ -90,6 +90,7 @@ pub unsafe fn get_str_attribute_slice(handle: *mut Ihandle, name: &str) -> Cow<s
     }
 }
 
+#[cfg(for_future_use)] // silence dead_code warning (probably) the best way
 pub fn get_attribute_handle(ih: *mut Ihandle, name: &str) -> *mut Ihandle {
     unsafe {
         let mut name_buf = SmallVec::<[u8; 64]>::new();
