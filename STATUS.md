@@ -17,7 +17,7 @@
 | **Containers**          |
 | Expander                |   •   |       |       |           |
 | Fill                    |       |       |   •   |           |
-| Frame                   |   •   |       |       |           |
+| Frame                   |       |   •   |       |           |
 | GridBox                 |       |   •   |       |           |
 | HBox                    |       |   •   |       |           |
 | Normalizer              |   •   |       |       |           |
