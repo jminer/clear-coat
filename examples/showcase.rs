@@ -105,6 +105,25 @@ fn create_cursors_page() -> Box<Control> {
     Box::new(page)
 }
 
+fn create_file_dialog_page() -> Box<Control> {
+
+    let dir_check_box = Toggle::new();
+    dir_check_box.set_title("Directory:");
+
+    let show_dialog = Button::with_title("Show Dialog");
+    show_dialog.action_event().add(move || {
+        let dialog = FileDlg::new();
+        dialog.popup(ScreenPosition::CenterParent, ScreenPosition::CenterParent)
+              .expect("couldn't show file dialog");
+    });
+
+    let page = vbox!(
+        dir_check_box,
+        show_dialog,
+    );
+    Box::new(page)
+}
+
 fn main() {
 
     let dialog = Dialog::new();
@@ -113,7 +132,7 @@ fn main() {
 
     tabs.append_tabs(&[
         TabInfo::new(&*create_cursors_page()).title("Cursors"),
-        TabInfo::new(&Fill::new()).title("File Dialog"),
+        TabInfo::new(&*create_file_dialog_page()).title("File Dialog"),
     ]);
 
     dialog.append(&tabs).expect("failed to build the window");
