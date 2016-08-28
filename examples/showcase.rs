@@ -71,6 +71,8 @@ fn create_cursors_page() -> Box<Control> {
         });
         radios.push(toggle);
     }
+    // The arrow cursor is the default.
+    radios[1].set_on(true);
 
     let grid = grid_box!(
         &radios[0],
