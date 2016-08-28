@@ -106,16 +106,44 @@ fn create_cursors_page() -> Box<Control> {
 }
 
 fn create_file_dialog_page() -> Box<Control> {
+
+    let type_check_box = Toggle::new();
+    type_check_box.set_title("Dialog Type:");
+
+    let open_radio = Toggle::new();
+    open_radio.set_title("Open");
+    let save_radio = Toggle::new();
+    save_radio.set_title("Save");
+    let dir_radio = Toggle::new();
+    dir_radio.set_title("Directory");
+    let type_radio = Radio::with_child(&vbox!(
+        &open_radio,
+        &save_radio,
+        &dir_radio,
+    ));
+
     let dir_check_box = Toggle::new();
     dir_check_box.set_title("Directory:");
 
     let dir_text_box = Text::new();
 
     let show_dialog = Button::with_title("Show Dialog");
+    let type_check_box_capt = type_check_box.clone();
+    let open_radio_capt = open_radio.clone();
+    let save_radio_capt = save_radio.clone();
     let dir_check_box_capt = dir_check_box.clone();
     let dir_text_box_capt = dir_text_box.clone();
     show_dialog.action_event().add(move || {
         let dialog = FileDlg::new();
+        if type_check_box_capt.value() == ToggleState::On {
+            dialog.set_dialog_type(if open_radio_capt.value() == ToggleState::On {
+                FileDialogType::Open
+            } else if save_radio_capt.value() == ToggleState::On {
+                FileDialogType::Save
+            } else {
+                FileDialogType::Dir
+            })
+        }
         if dir_check_box_capt.value() == ToggleState::On {
             dialog.set_directory(&dir_text_box_capt.value());
         }
@@ -124,11 +152,11 @@ fn create_file_dialog_page() -> Box<Control> {
     });
 
     let grid = grid_box!(
-        dir_check_box,
-        dir_text_box,
-        fill!(),
-        show_dialog,
+        type_check_box, type_radio,
+        dir_check_box, dir_text_box,
+        fill!(), show_dialog,
     );
+    grid.set_alignment_lin_all(VAlignment::Top);
     grid.set_num_div(NumDiv::Fixed(2));
     grid.fit_all_to_children();
     Box::new(grid)
