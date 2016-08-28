@@ -72,7 +72,7 @@ pub use label::Label;
 pub use radio::Radio;
 pub use tabs::{Tabs, TabInfo};
 pub use text::{Text, CaretArgs};
-pub use toggle::Toggle;
+pub use toggle::{Toggle, ToggleState};
 pub use menu::{Menu, MenuSubitem, Item, Separator, Submenu};
 pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event, ButtonArgs, CanvasActionArgs};
