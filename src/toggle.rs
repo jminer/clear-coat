@@ -51,6 +51,9 @@ impl Toggle {
             ToggleState::from_str(s.as_bytes())
         }
     }
+    pub fn is_on(&self) -> bool {
+        self.value() == ToggleState::On
+    }
 
     pub fn set_value(&self, value: ToggleState) -> &Self {
         set_str_attribute(self.handle(), "VALUE\0", value.to_str());

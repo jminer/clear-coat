@@ -135,16 +135,16 @@ fn create_file_dialog_page() -> Box<Control> {
     let dir_text_box_capt = dir_text_box.clone();
     show_dialog.action_event().add(move || {
         let dialog = FileDlg::new();
-        if type_check_box_capt.value() == ToggleState::On {
-            dialog.set_dialog_type(if open_radio_capt.value() == ToggleState::On {
+        if type_check_box_capt.is_on() {
+            dialog.set_dialog_type(if open_radio_capt.is_on() {
                 FileDialogType::Open
-            } else if save_radio_capt.value() == ToggleState::On {
+            } else if save_radio_capt.is_on() {
                 FileDialogType::Save
             } else {
                 FileDialogType::Dir
             })
         }
-        if dir_check_box_capt.value() == ToggleState::On {
+        if dir_check_box_capt.is_on() {
             dialog.set_directory(&dir_text_box_capt.value());
         }
         dialog.popup(ScreenPosition::CenterParent, ScreenPosition::CenterParent)
