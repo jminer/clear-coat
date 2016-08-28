@@ -106,22 +106,32 @@ fn create_cursors_page() -> Box<Control> {
 }
 
 fn create_file_dialog_page() -> Box<Control> {
-
     let dir_check_box = Toggle::new();
     dir_check_box.set_title("Directory:");
 
+    let dir_text_box = Text::new();
+
     let show_dialog = Button::with_title("Show Dialog");
+    let dir_check_box_capt = dir_check_box.clone();
+    let dir_text_box_capt = dir_text_box.clone();
     show_dialog.action_event().add(move || {
         let dialog = FileDlg::new();
+        if dir_check_box_capt.value() == ToggleState::On {
+            dialog.set_directory(&dir_text_box_capt.value());
+        }
         dialog.popup(ScreenPosition::CenterParent, ScreenPosition::CenterParent)
               .expect("couldn't show file dialog");
     });
 
-    let page = vbox!(
+    let grid = grid_box!(
         dir_check_box,
+        dir_text_box,
+        fill!(),
         show_dialog,
     );
-    Box::new(page)
+    grid.set_num_div(NumDiv::Fixed(2));
+    grid.fit_all_to_children();
+    Box::new(grid)
 }
 
 fn main() {
