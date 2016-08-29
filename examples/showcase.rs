@@ -108,7 +108,6 @@ fn create_cursors_page() -> Box<Control> {
 }
 
 fn create_file_dialog_page() -> Box<Control> {
-
     let type_check_box = Toggle::new();
     type_check_box.set_title("Dialog Type:");
 
@@ -129,12 +128,17 @@ fn create_file_dialog_page() -> Box<Control> {
 
     let dir_text_box = Text::new();
 
+    let multiple_files_check_box = Toggle::new();
+    multiple_files_check_box.set_title("Multiple Files");
+
     let show_dialog = Button::with_title("Show Dialog");
+
     let type_check_box_capt = type_check_box.clone();
     let open_radio_capt = open_radio.clone();
     let save_radio_capt = save_radio.clone();
     let dir_check_box_capt = dir_check_box.clone();
     let dir_text_box_capt = dir_text_box.clone();
+    let multiple_files_check_box_capt = multiple_files_check_box.clone();
     show_dialog.action_event().add(move || {
         let dialog = FileDlg::new();
         if type_check_box_capt.is_on() {
@@ -149,6 +153,9 @@ fn create_file_dialog_page() -> Box<Control> {
         if dir_check_box_capt.is_on() {
             dialog.set_directory(&dir_text_box_capt.value());
         }
+        if multiple_files_check_box_capt.is_on() {
+            dialog.set_multiple_files(true);
+        }
         dialog.popup(ScreenPosition::CenterParent, ScreenPosition::CenterParent)
               .expect("couldn't show file dialog");
     });
@@ -156,6 +163,7 @@ fn create_file_dialog_page() -> Box<Control> {
     let grid = grid_box!(
         type_check_box, type_radio,
         dir_check_box, dir_text_box,
+        multiple_files_check_box, fill!(),
         fill!(), show_dialog,
     );
     grid.set_alignment_lin_all(VAlignment::Top);
