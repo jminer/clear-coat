@@ -166,8 +166,8 @@ fn create_file_dialog_page() -> Box<Control> {
         multiple_files_check_box, fill!(),
         fill!(), show_dialog,
     );
-    grid.set_alignment_lin_all(VAlignment::Top);
     grid.set_num_div(NumDiv::Fixed(2));
+    grid.set_size_col(1);
     grid.fit_all_to_children();
     Box::new(grid)
 }
