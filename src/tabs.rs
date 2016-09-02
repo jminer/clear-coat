@@ -31,6 +31,29 @@ impl<'a, 'b> TabInfo<'a, 'b> {
     }
 }
 
+/// # Examples
+///
+/// Using the `append_tabs` helper:
+///
+/// ```
+/// # use clear_coat::*;
+/// let tabs = Tabs::new();
+/// tabs.append_tabs(&[
+///     TabInfo::new(&Text::new()).title("First"),
+///     TabInfo::new(&Text::new()).title("Second"),
+/// ]);
+/// ```
+///
+/// or the more verbose way:
+///
+/// ```
+/// # use clear_coat::*;
+/// let tabs = Tabs::new();
+/// tabs.append(&Text::new());
+/// tabs.set_tab_title(0, "First");
+/// tabs.append(&Text::new());
+/// tabs.set_tab_title(1, "Second");
+/// ```
 #[derive(Clone)]
 pub struct Tabs(HandleRc);
 
