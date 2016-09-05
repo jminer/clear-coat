@@ -28,6 +28,11 @@ pub fn str_to_c_vec<'a: 'b, 'b, A: ::smallvec::Array<Item=u8>>(s: &'a str, buf: 
     }
 }
 
+// These functions are named similiarly to IUP's functions. Summary of IUP functions:
+// IupSetAttribute() - stores a pointer as an attribute's value; could be a pointer to constant string or an app's struct
+// IupSetStrAttribute() - assumes you pass a null-term string and copies it before it returns
+// IupSetAttributeHandle() - same as a IupSetHandle/IupSetAttribute pair; associates a name to an Ihandle then sets an attribute with that name
+
 pub fn set_str_attribute(handle: *mut Ihandle, name: &str, value: &str) {
     unsafe {
         let mut name_buf = SmallVec::<[u8; 64]>::new();
