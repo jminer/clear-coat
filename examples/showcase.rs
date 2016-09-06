@@ -172,6 +172,34 @@ fn create_file_dialog_page() -> Box<Control> {
     Box::new(grid)
 }
 
+fn create_list_page() -> Box<Control> {
+    let list = List::new();
+    list.set_items(&["A", "B", "C"]);
+    let list_label = Label::new();
+
+    let dropdown = List::new();
+    dropdown.set_dropdown(true);
+    dropdown.set_items(&["apple", "banana", "grape"]);
+
+    let grid = grid_box!(
+        &list,
+        &list_label,
+        &dropdown,
+    );
+
+    let list_label_capt = list_label.clone();
+    let grid_capt = grid.clone();
+    list.action_event().add(move |args: &ListActionArgs| {
+        if !args.selected {
+            return;
+        }
+        list_label_capt.set_title(&format!("Selected {}", args.item_index));
+        grid_capt.refresh_children();
+    });
+
+    Box::new(grid)
+}
+
 fn main() {
 
     let dialog = Dialog::new();
@@ -181,6 +209,7 @@ fn main() {
     tabs.append_tabs(&[
         TabInfo::new(&*create_cursors_page()).title("Cursors"),
         TabInfo::new(&*create_file_dialog_page()).title("File Dialog"),
+        TabInfo::new(&*create_list_page()).title("List"),
     ]);
 
     dialog.append(&tabs).expect("failed to build the window");

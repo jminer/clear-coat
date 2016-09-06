@@ -76,7 +76,7 @@ pub use tabs::{Tabs, TabInfo};
 pub use text::{Text, CaretArgs};
 pub use toggle::{Toggle, ToggleState};
 pub use menu::{Menu, MenuSubitem, Item, Separator, Submenu};
-pub use containers::{Container, Fill, Hbox, Vbox, NumDiv, GridBox};
+pub use containers::{Container, NonDialogContainer, Fill, Hbox, Vbox, NumDiv, GridBox};
 pub use callbacks::{CallbackAction, Event, ButtonArgs, CanvasActionArgs};
 
 // With this layout, you can glob import this module's contents but selectively import the

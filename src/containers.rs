@@ -123,6 +123,7 @@ impl Hbox {
 impl_control_traits!(Hbox);
 
 impl Container for Hbox {}
+impl NonDialogContainer for Hbox {}
 
 #[macro_export]
 macro_rules! hbox {
@@ -178,6 +179,7 @@ impl Vbox {
 impl_control_traits!(Vbox);
 
 impl Container for Vbox {}
+impl NonDialogContainer for Vbox {}
 
 #[macro_export]
 macro_rules! vbox {
@@ -365,6 +367,7 @@ impl GridBox {
 impl_control_traits!(GridBox);
 
 impl Container for GridBox {}
+impl NonDialogContainer for GridBox {}
 
 impl OrientationAttribute for GridBox {}
 
