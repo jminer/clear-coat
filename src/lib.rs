@@ -70,7 +70,7 @@ pub use button::Button;
 pub use canvas::{Canvas};
 pub use frame::Frame;
 pub use label::Label;
-pub use list::List;
+pub use list::{List, ListActionArgs};
 pub use radio::Radio;
 pub use tabs::{Tabs, TabInfo};
 pub use text::{Text, CaretArgs};

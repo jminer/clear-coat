@@ -34,7 +34,7 @@
 | DatePick                |   •   |       |       |           |
 | Label                   |       |   •   |       |           |
 | Link                    |   •   |       |       |           |
-| List                    |   •   |       |       |           |
+| List                    |       |   •   |       |           |
 | ProgressBar             |   •   |       |       |           |
 | Text                    |       |   •   |       |           |
 | Toggle                  |       |   •   |       |           |

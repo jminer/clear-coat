@@ -7,7 +7,10 @@
 
 pub use std::ops::CoerceUnsized;
 pub use std::ptr;
-pub use libc::c_int;
+pub use libc::{
+    c_char,
+    c_int,
+};
 pub use iup_sys::*;
 pub use smallvec::SmallVec;
 pub use super::{

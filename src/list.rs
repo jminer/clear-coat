@@ -6,6 +6,7 @@
  */
 
 use super::control_prelude::*;
+use std::ffi::CStr;
 
 #[derive(Clone)]
 pub struct List(HandleRc);
@@ -60,6 +61,17 @@ impl List {
     // An `index` of 0 is the first item.
     pub fn set_item(&self, index: usize, text: &str) -> &Self {
         set_str_attribute(self.handle(), &format!("{}\0", index + 1), text);
+        self
+    }
+
+    pub fn set_items<'a, I, T>(&self, items: I) -> &Self
+                               where I: IntoIterator<Item=T>, T: AsRef<str> {
+        let mut index = 0;
+        for item in items {
+            self.set_item(index, item.as_ref());
+            index += 1;
+        }
+        reset_attribute(self.handle(), &format!("{}\0", index + 1));
         self
     }
 
@@ -138,3 +150,34 @@ impl MinMaxSizeAttribute for List {}
 impl VisibleAttribute for List {}
 
 impl MenuCommonCallbacks for List {}
+
+#[derive(Clone)]
+pub struct ListActionArgs<'a> {
+    pub text: &'a str,
+    pub item_index: usize,
+    pub selected: bool,
+    _dummy: (),
+}
+
+impl_callbacks! {
+    List {
+        "ACTION\0" => action_event {
+            ACTION_CALLBACKS<FnMut(&ListActionArgs), ListActionCallbackToken>
+        }
+        unsafe extern fn list_action_cb(ih: *mut Ihandle, text: *mut c_char, item: c_int, state: c_int) -> c_int {
+            with_callbacks(ih, &ACTION_CALLBACKS, |cbs| {
+                let text_str = CStr::from_ptr(text).to_string_lossy();
+                let args = ListActionArgs {
+                    text: &*text_str,
+                    item_index: (item - 1) as usize,
+                    selected: state == 1,
+                    _dummy: (),
+                };
+                for cb in cbs {
+                    (&mut *cb.1.borrow_mut())(&args);
+                }
+                IUP_DEFAULT
+            })
+        }
+    }
+}
