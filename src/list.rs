@@ -37,8 +37,8 @@ impl List {
         }
     }
 
-    pub fn set_edit_box(&self, dropdown: bool) -> &Self {
-        set_str_attribute(self.handle(), "EDITBOX\0", if dropdown { "YES\0" } else { "NO\0" });
+    pub fn set_edit_box(&self, edit_box: bool) -> &Self {
+        set_str_attribute(self.handle(), "EDITBOX\0", if edit_box { "YES\0" } else { "NO\0" });
         self
     }
 
