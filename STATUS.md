@@ -24,7 +24,7 @@
 | Radio                   |       |   •   |       |           |
 | ScrollBox               |   •   |       |       |           |
 | Split                   |   •   |       |       |           |
-| Tabs                    |   •   |       |       |           |
+| Tabs                    |       |   •   |       |           |
 | VBox                    |       |   •   |       |           |
 | ZBox                    |   •   |       |       |           |
 | **Standard**            |
