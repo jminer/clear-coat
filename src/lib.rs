@@ -7,6 +7,11 @@
 
 #![feature(coerce_unsized)]
 
+#![cfg_attr(feature="clippy", allow(collapsible_if))]
+#![cfg_attr(feature="clippy", allow(extend_from_slice))]
+#![cfg_attr(feature="clippy", allow(float_cmp))]
+#![cfg_attr(feature="clippy", allow(inline_always))]
+
 extern crate libc;
 extern crate iup_sys;
 extern crate kernel32;
@@ -301,6 +306,7 @@ impl ScreenPosition {
        }
     }
 
+    #[cfg_attr(feature="clippy", allow(match_same_arms))]
     fn to_int(self) -> c_int {
         match self {
             ScreenPosition::Absolute(i) => i,
