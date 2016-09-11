@@ -177,15 +177,34 @@ fn create_list_page() -> Box<Control> {
     list.set_items(&["A", "B", "C"]);
     let list_label = Label::new();
 
+    let multiple_list = List::new();
+    multiple_list.set_multiple(true);
+    multiple_list.set_items(&["D", "E", "F"]);
+    let multiple_list_label = Label::new();
+
     let dropdown = List::new();
     dropdown.set_dropdown(true);
-    dropdown.set_items(&["apple", "banana", "grape"]);
+    dropdown.set_items(&["Apple", "Grape", "Orange"]);
+    let dropdown_label = Label::new();
+
+    let edit_box = List::new();
+    edit_box.set_dropdown(true);
+    edit_box.set_edit_box(true);
+    edit_box.set_items(&["Cherry", "Peach", "Pumpkin", "Rhubarb"]);
+    let edit_box_label = Label::new();
 
     let grid = grid_box!(
         &list,
+        &multiple_list,
         &list_label,
+        &multiple_list_label,
         &dropdown,
+        &edit_box,
+        &dropdown_label,
+        &edit_box_label,
     );
+    grid.set_num_div(NumDiv::Fixed(2));
+    grid.fit_all_to_children();
 
     let list_label_capt = list_label.clone();
     let grid_capt = grid.clone();
@@ -195,6 +214,39 @@ fn create_list_page() -> Box<Control> {
         }
         list_label_capt.set_title(&format!("Selected {}", args.item_index));
         grid_capt.refresh_children();
+        grid_capt.fit_all_to_children();
+    });
+
+    let multiple_list_capt = multiple_list.clone();
+    let grid_capt = grid.clone();
+    multiple_list.action_event().add(move |_: &ListActionArgs| {
+        let mut s = String::with_capacity(32);
+        for (i, index) in multiple_list_capt.value_multiple().into_iter().enumerate() {
+            if i > 0 {
+                s += ", ";
+            }
+            s += &*index.to_string();
+        }
+        multiple_list_label.set_title(&format!("Selected {}", &s));
+        grid_capt.refresh_children();
+        grid_capt.fit_all_to_children();
+    });
+
+    let dropdown_capt = dropdown.clone();
+    let grid_capt = grid.clone();
+    dropdown.action_event().add(move |_: &ListActionArgs| {
+        use std::borrow::Cow;
+        let s = dropdown_capt.value_single().map(|i| Cow::Owned(dropdown_capt.item(i))).unwrap_or("No".into());
+        dropdown_label.set_title(&format!("{} Juice", &s));
+        grid_capt.refresh_children();
+        grid_capt.fit_all_to_children();
+    });
+
+    let grid_capt = grid.clone();
+    edit_box.action_event().add(move |args: &ListActionArgs| {
+        edit_box_label.set_title(&format!("{} Pie", &args.text));
+        grid_capt.refresh_children();
+        grid_capt.fit_all_to_children();
     });
 
     Box::new(grid)
