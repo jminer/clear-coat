@@ -166,10 +166,15 @@ fn create_file_dialog_page() -> Box<Control> {
         multiple_files_check_box, fill!(),
         fill!(), show_dialog,
     );
+    grid.set_top_level_margin_and_gap();
     grid.set_num_div(NumDiv::Fixed(2));
     grid.set_size_col(1);
     grid.fit_all_to_children();
-    Box::new(grid)
+    // I don't think the extra vbox should be necessary, but there won't be space around
+    // the GridBox otherwise.
+    let wrapper = vbox!(&grid);
+    wrapper.set_top_level_margin_and_gap();
+    Box::new(wrapper)
 }
 
 fn create_list_page() -> Box<Control> {
@@ -203,6 +208,7 @@ fn create_list_page() -> Box<Control> {
         &dropdown_label,
         &edit_box_label,
     );
+    grid.set_top_level_margin_and_gap();
     grid.set_num_div(NumDiv::Fixed(2));
     grid.fit_all_to_children();
 
@@ -249,7 +255,11 @@ fn create_list_page() -> Box<Control> {
         grid_capt.fit_all_to_children();
     });
 
-    Box::new(grid)
+    // I don't think the extra vbox should be necessary, but there won't be space around
+    // the GridBox otherwise.
+    let wrapper = vbox!(&grid);
+    wrapper.set_top_level_margin_and_gap();
+    Box::new(wrapper)
 }
 
 fn main() {
