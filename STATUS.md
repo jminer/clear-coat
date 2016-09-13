@@ -50,6 +50,10 @@
 | Clipboard               |   •   |       |       |           |
 | Timer                   |   •   |       |       |           |
 | Global attributes       |   •   |       |       |           |
+| **Controls library**    |
+| GLCanvas                |   •   |       |       |           |
+| MatrixEx                |   •   |       |       |           |
+| MatrixList              |   •   |       |       |           |
 
 These I don't plan to implement, and I'm not sure I want in the library:
 
@@ -64,9 +68,6 @@ These I don't plan to implement, and I'm not sure I want in the library:
 
 These I may implement, but at this time are lower priority:
 
-- Matrix
-- MatrixList
-- GLCanvas
 - Plot
 - Scintilla
 - WebBrowser
