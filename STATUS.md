@@ -1,4 +1,8 @@
 
+- **Basic** support for a control is usually useable for the most common usecases.
+- **Mostly complete** support should be include all but rarely used features.
+- **Complete** support is support for everything that Clear Coat will support (which isn't always everything IUP does).
+
 | Functionality           | None  | Basic | Most  | Complete  |
 | -------------           | :--:  | :---: | :--:  | :------:  |
 | Callback framework      |       |       |       |     •     |
