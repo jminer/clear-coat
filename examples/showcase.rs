@@ -39,6 +39,7 @@ unsafe impl Control for CursorsCanvas {
 
 fn create_cursors_page() -> Box<Control> {
     let cursors_canvas = Rc::new(CursorsCanvas::new());
+    cursors_canvas.canvas.set_min_size(300, 200);
 
     let radios_info = [
         ("None", Cursor::None),
