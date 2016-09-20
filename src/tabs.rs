@@ -66,10 +66,12 @@ impl Tabs {
         }
     }
 
+    /// A `pos` of 0 is the first tab.
     pub fn tab_title(&self, pos: usize) -> String {
         get_str_attribute(self.handle(), &format!("TABTITLE{}\0", pos))
     }
 
+    /// A `pos` of 0 is the first tab.
     pub fn set_tab_title(&self, pos: usize, title: &str) -> &Self {
         set_str_attribute(self.handle(), &format!("TABTITLE{}\0", pos), title);
         self
