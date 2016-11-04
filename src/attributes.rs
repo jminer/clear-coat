@@ -8,7 +8,7 @@
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::CStr;
-use libc::{c_char, c_int};
+use libc::{c_char, c_int, c_void};
 use iup_sys::*;
 use smallvec::SmallVec;
 use winapi;
@@ -71,6 +71,12 @@ pub fn get_attribute_ptr(handle: *mut Ihandle, name: &str) -> *mut c_char {
         let c_name = str_to_c_vec(name, &mut name_buf);
         IupGetAttribute(handle as *mut Ihandle, c_name)
     }
+}
+
+pub unsafe fn set_attribute_ptr(handle: *mut Ihandle, name: &str, value: *const i8) {
+    let mut name_buf = SmallVec::<[u8; 64]>::new();
+    let c_name = str_to_c_vec(name, &mut name_buf);
+    IupSetAttribute(handle, c_name, value);
 }
 
 // Unfortunately, the return value has to be copied because its lifetime isn't guaranteed.

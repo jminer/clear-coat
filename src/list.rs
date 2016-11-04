@@ -6,6 +6,7 @@
  */
 
 use super::control_prelude::*;
+use attributes::set_attribute_ptr;
 use std::ffi::CStr;
 
 #[derive(Clone)]
@@ -92,7 +93,6 @@ impl List {
         self
     }
 
-    // An `index` of 0 is the first item.
     pub fn clear(&self) -> &Self {
         set_str_attribute(self.handle(), "REMOVEITEM\0", "ALL\0");
         self
@@ -122,6 +122,20 @@ impl List {
             let s = get_str_attribute_slice(self.handle(), "VALUE\0");
             s.parse::<usize>().ok().into_iter().filter(|i| *i != 0).next().map(|i| i - 1)
         }
+    }
+
+    pub fn set_value_single(&self, index: Option<usize>) -> &Self {
+        assert!(!self.edit_box());
+        assert!(!self.multiple());
+
+        if let Some(index) = index {
+            set_str_attribute(self.handle(), "VALUE\0", &format!("{}\0", index + 1));
+        } else {
+            unsafe {
+                set_attribute_ptr(self.handle(), "VALUE\0", ptr::null_mut());
+            }
+        }
+        self
     }
 
     /// Returns the indexes of all selected items.
