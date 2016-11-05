@@ -469,18 +469,20 @@ pub trait MinMaxSizeAttribute : Control {
         get_int_int_attribute(self.handle(), "MINSIZE")
     }
 
-    fn set_min_size(&self, x: i32, y: i32) {
+    fn set_min_size(&self, x: i32, y: i32) -> &Self {
         let s = format!("{}x{}", x, y);
         set_str_attribute(self.handle(), "MINSIZE", &s);
+        self
     }
 
     fn max_size(&self) -> (i32, i32) {
         get_int_int_attribute(self.handle(), "MAXSIZE")
     }
 
-    fn set_max_size(&self, x: i32, y: i32) {
+    fn set_max_size(&self, x: i32, y: i32) -> &Self {
         let s = format!("{}x{}", x, y);
         set_str_attribute(self.handle(), "MAXSIZE", &s);
+        self
     }
 }
 
@@ -492,8 +494,9 @@ pub trait OrientationAttribute : Control {
         }
     }
 
-    fn set_orientation(&self, orientation: ::Orientation) {
+    fn set_orientation(&self, orientation: ::Orientation) -> &Self {
         set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
+        self
     }
 }
 
@@ -547,8 +550,9 @@ pub trait TipAttribute : Control {
         get_str_attribute_slice(self.handle(), "TIP")
     }
 
-    fn set_tip(&self, tip: &str) {
+    fn set_tip(&self, tip: &str) -> &Self {
         set_str_attribute(self.handle(), "TIP", tip);
+        self
     }
 }
 
@@ -557,8 +561,9 @@ pub trait TitleAttribute : Control {
         get_str_attribute(self.handle(), "TITLE")
     }
 
-    fn set_title(&self, title: &str) {
+    fn set_title(&self, title: &str) -> &Self {
         set_str_attribute(self.handle(), "TITLE", title);
+        self
     }
 }
 
