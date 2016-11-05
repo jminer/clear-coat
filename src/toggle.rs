@@ -26,9 +26,9 @@ impl ToggleState {
 
     fn to_str(self) -> &'static str {
         match self {
-            ToggleState::On => "ON",
-            ToggleState::Off => "OFF",
-            ToggleState::NotDef => "NOTDEF",
+            ToggleState::On => "ON\0",
+            ToggleState::Off => "OFF\0",
+            ToggleState::NotDef => "NOTDEF\0",
         }
     }
 }

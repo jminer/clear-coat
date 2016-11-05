@@ -34,14 +34,14 @@ impl Label {
     /// Gets the horizontal alignment of the contents of the label.
     pub fn halignment(&self) -> ::HAlignment {
         unsafe {
-            let slice = get_str_attribute_slice(self.handle(), "ALIGNMENT");
+            let slice = get_str_attribute_slice(self.handle(), "ALIGNMENT\0");
             ::HAlignment::from_str(slice.as_bytes().split(|c| *c == b':').next().unwrap())
         }
     }
 
     /// Sets the horizontal alignment of the contents of the label.
     pub fn set_halignment(&self, alignment: ::HAlignment) -> &Self {
-        set_str_attribute(self.handle(), "ALIGNMENT", alignment.to_str());
+        set_str_attribute(self.handle(), "ALIGNMENT\0", alignment.to_str());
         self
     }
 }

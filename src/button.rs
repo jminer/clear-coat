@@ -63,7 +63,7 @@ impl ButtonCallback for Button {}
 callback_token!(ButtonActionCallbackToken);
 thread_local!(
     static BUTTON_ACTION_CALLBACKS: CallbackRegistry<FnMut(), ButtonActionCallbackToken> =
-        CallbackRegistry::new("ACTION", button_action_cb)
+        CallbackRegistry::new("ACTION\0", button_action_cb)
 );
 extern fn button_action_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &BUTTON_ACTION_CALLBACKS)

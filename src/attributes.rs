@@ -139,11 +139,11 @@ fn get_unique_attribute_name() -> String {
 
 pub trait ActiveAttribute : Control {
     fn active(&self) -> bool {
-        get_str_attribute(self.handle(), "ACTIVE") == "YES"
+        get_str_attribute(self.handle(), "ACTIVE\0") == "YES"
     }
 
     fn set_active(&self, active: bool) {
-        set_str_attribute(self.handle(), "ACTIVE", if active { "YES" } else { "NO" });
+        set_str_attribute(self.handle(), "ACTIVE\0", if active { "YES\0" } else { "NO\0" });
     }
 }
 
@@ -166,7 +166,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_dx(&self, dx: f32) -> &Self {
-        set_str_attribute(self.handle(), "DX\0", &dx.to_string());
+        set_str_attribute(self.handle(), "DX\0", &format!("{}\0", dx));
         self
     }
 
@@ -178,7 +178,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_dy(&self, dy: f32) -> &Self {
-        set_str_attribute(self.handle(), "DY\0", &dy.to_string());
+        set_str_attribute(self.handle(), "DY\0", &format!("{}\0", dy));
         self
     }
 
@@ -190,7 +190,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_pos_x(&self, pos_x: f32) -> &Self {
-        set_str_attribute(self.handle(), "POSX\0", &pos_x.to_string());
+        set_str_attribute(self.handle(), "POSX\0", &format!("{}\0", pos_x));
         self
     }
 
@@ -202,7 +202,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_pos_y(&self, pos_y: f32) -> &Self {
-        set_str_attribute(self.handle(), "POSY\0", &pos_y.to_string());
+        set_str_attribute(self.handle(), "POSY\0", &format!("{}\0", pos_y));
         self
     }
 
@@ -214,7 +214,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_x_min(&self, x_min: f32) -> &Self {
-        set_str_attribute(self.handle(), "XMIN\0", &x_min.to_string());
+        set_str_attribute(self.handle(), "XMIN\0", &format!("{}\0", x_min));
         self
     }
 
@@ -226,7 +226,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_x_max(&self, x_max: f32) -> &Self {
-        set_str_attribute(self.handle(), "XMAX\0", &x_max.to_string());
+        set_str_attribute(self.handle(), "XMAX\0", &format!("{}\0", x_max));
         self
     }
 
@@ -238,7 +238,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_y_min(&self, y_min: f32) -> &Self {
-        set_str_attribute(self.handle(), "YMIN\0", &y_min.to_string());
+        set_str_attribute(self.handle(), "YMIN\0", &format!("{}\0", y_min));
         self
     }
 
@@ -250,7 +250,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_y_max(&self, y_max: f32) -> &Self {
-        set_str_attribute(self.handle(), "YMAX\0", &y_max.to_string());
+        set_str_attribute(self.handle(), "YMAX\0", &format!("{}\0", y_max));
         self
     }
 
@@ -261,8 +261,8 @@ pub trait CanvasAttributes : Control {
         }
     }
 
-    fn set_line_x(&self, linex: f32) -> &Self {
-        set_str_attribute(self.handle(), "LINEX\0", &linex.to_string());
+    fn set_line_x(&self, line_x: f32) -> &Self {
+        set_str_attribute(self.handle(), "LINEX\0", &format!("{}\0", line_x));
         self
     }
 
@@ -274,7 +274,7 @@ pub trait CanvasAttributes : Control {
     }
 
     fn set_line_y(&self, line_y: f32) -> &Self {
-        set_str_attribute(self.handle(), "LINEY\0", &line_y.to_string());
+        set_str_attribute(self.handle(), "LINEY\0", &format!("{}\0", line_y));
         self
     }
 
@@ -466,22 +466,22 @@ pub trait ExpandAttribute : Control {
 
 pub trait MinMaxSizeAttribute : Control {
     fn min_size(&self) -> (i32, i32) {
-        get_int_int_attribute(self.handle(), "MINSIZE")
+        get_int_int_attribute(self.handle(), "MINSIZE\0")
     }
 
     fn set_min_size(&self, x: i32, y: i32) -> &Self {
-        let s = format!("{}x{}", x, y);
-        set_str_attribute(self.handle(), "MINSIZE", &s);
+        let s = format!("{}x{}\0", x, y);
+        set_str_attribute(self.handle(), "MINSIZE\0", &s);
         self
     }
 
     fn max_size(&self) -> (i32, i32) {
-        get_int_int_attribute(self.handle(), "MAXSIZE")
+        get_int_int_attribute(self.handle(), "MAXSIZE\0")
     }
 
     fn set_max_size(&self, x: i32, y: i32) -> &Self {
-        let s = format!("{}x{}", x, y);
-        set_str_attribute(self.handle(), "MAXSIZE", &s);
+        let s = format!("{}x{}\0", x, y);
+        set_str_attribute(self.handle(), "MAXSIZE\0", &s);
         self
     }
 }
@@ -489,13 +489,13 @@ pub trait MinMaxSizeAttribute : Control {
 pub trait OrientationAttribute : Control {
     fn orientation(&self) -> ::Orientation {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "ORIENTATION");
+            let s = get_str_attribute_slice(self.handle(), "ORIENTATION\0");
             ::Orientation::from_str(s.as_bytes())
         }
     }
 
     fn set_orientation(&self, orientation: ::Orientation) -> &Self {
-        set_str_attribute(self.handle(), "ORIENTATION", orientation.to_str());
+        set_str_attribute(self.handle(), "ORIENTATION\0", orientation.to_str());
         self
     }
 }
@@ -544,25 +544,25 @@ pub trait ScrollbarAttribute : Control {
 
 pub trait TipAttribute : Control {
     fn tip(&self) -> String {
-        get_str_attribute(self.handle(), "TIP")
+        get_str_attribute(self.handle(), "TIP\0")
     }
     unsafe fn tip_slice(&self) -> Cow<str> {
-        get_str_attribute_slice(self.handle(), "TIP")
+        get_str_attribute_slice(self.handle(), "TIP\0")
     }
 
     fn set_tip(&self, tip: &str) -> &Self {
-        set_str_attribute(self.handle(), "TIP", tip);
+        set_str_attribute(self.handle(), "TIP\0", tip);
         self
     }
 }
 
 pub trait TitleAttribute : Control {
     fn title(&self) -> String {
-        get_str_attribute(self.handle(), "TITLE")
+        get_str_attribute(self.handle(), "TITLE\0")
     }
 
     fn set_title(&self, title: &str) -> &Self {
-        set_str_attribute(self.handle(), "TITLE", title);
+        set_str_attribute(self.handle(), "TITLE\0", title);
         self
     }
 }

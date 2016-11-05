@@ -244,55 +244,55 @@ impl GridBox {
 
     pub fn alignment_lin(&self, line: u32) -> ::VAlignment {
         unsafe {
-            let attr = format!("ALIGNMENTLIN{}", line);
+            let attr = format!("ALIGNMENTLIN{}\0", line);
             ::VAlignment::from_str(get_str_attribute_slice(self.handle(), &attr).as_bytes())
         }
     }
 
     pub fn set_alignment_lin(&self, line: u32, alignment: ::VAlignment) -> &Self {
-        set_str_attribute(self.handle(), &format!("ALIGNMENTLIN{}", line), alignment.to_str());
+        set_str_attribute(self.handle(), &format!("ALIGNMENTLIN{}\0", line), alignment.to_str());
         self
     }
 
     pub fn alignment_lin_all(&self) -> ::VAlignment {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTLIN");
+            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTLIN\0");
             ::VAlignment::from_str(s.as_bytes())
         }
     }
 
     pub fn set_alignment_lin_all(&self, alignment: ::VAlignment) -> &Self {
-        set_str_attribute(self.handle(), "ALIGNMENTLIN", alignment.to_str());
+        set_str_attribute(self.handle(), "ALIGNMENTLIN\0", alignment.to_str());
         self
     }
 
     pub fn alignment_col(&self, column: u32) -> ::HAlignment {
         unsafe {
-            let attr = format!("ALIGNMENTCOL{}", column);
+            let attr = format!("ALIGNMENTCOL{}\0", column);
             ::HAlignment::from_str(get_str_attribute_slice(self.handle(), &attr).as_bytes())
         }
     }
 
     pub fn set_alignment_col(&self, column: u32, alignment: ::HAlignment) -> &Self {
-        set_str_attribute(self.handle(), &format!("ALIGNMENTCOL{}", column), alignment.to_str());
+        set_str_attribute(self.handle(), &format!("ALIGNMENTCOL{}\0", column), alignment.to_str());
         self
     }
 
     pub fn alignment_col_all(&self) -> ::HAlignment {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTCOL");
+            let s = get_str_attribute_slice(self.handle(), "ALIGNMENTCOL\0");
             ::HAlignment::from_str(s.as_bytes())
         }
     }
 
     pub fn set_alignment_col_all(&self, alignment: ::HAlignment) -> &Self {
-        set_str_attribute(self.handle(), "ALIGNMENTCOL", alignment.to_str());
+        set_str_attribute(self.handle(), "ALIGNMENTCOL\0", alignment.to_str());
         self
     }
 
     pub fn num_div(&self) -> NumDiv {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "NUMDIV");
+            let s = get_str_attribute_slice(self.handle(), "NUMDIV\0");
             if s.as_bytes() == b"-1" {
                 NumDiv::Auto
             } else {
@@ -303,22 +303,22 @@ impl GridBox {
 
     pub fn set_num_div(&self, num: NumDiv) -> &Self {
         match num {
-            NumDiv::Fixed(i) => set_str_attribute(self.handle(), "NUMDIV", &i.to_string()),
-            NumDiv::Auto => set_str_attribute(self.handle(), "NUMDIV", "AUTO"),
+            NumDiv::Fixed(i) => set_str_attribute(self.handle(), "NUMDIV\0", &format!("{}\0", i)),
+            NumDiv::Auto => set_str_attribute(self.handle(), "NUMDIV\0", "AUTO\0"),
         };
         self
     }
 
     pub fn num_lin(&self) -> u32 {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "NUMLIN");
+            let s = get_str_attribute_slice(self.handle(), "NUMLIN\0");
             s.parse().expect("could not convert NUMLIN to an integer")
         }
     }
 
     pub fn num_col(&self) -> u32 {
         unsafe {
-            let s = get_str_attribute_slice(self.handle(), "NUMCOL");
+            let s = get_str_attribute_slice(self.handle(), "NUMCOL\0");
             s.parse().expect("could not convert NUMLIN to an integer")
         }
     }

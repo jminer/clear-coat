@@ -30,9 +30,9 @@ impl FileDialogType {
 
     fn to_str(&self) -> &'static str {
         match *self {
-            FileDialogType::Open => "OPEN",
-            FileDialogType::Save => "SAVE",
-            FileDialogType::Dir => "DIR",
+            FileDialogType::Open => "OPEN\0",
+            FileDialogType::Save => "SAVE\0",
+            FileDialogType::Dir => "DIR\0",
         }
     }
 }
@@ -72,26 +72,26 @@ impl FileDlg {
 
     pub fn dialog_type(&self) -> FileDialogType {
         unsafe {
-            let val = get_str_attribute_slice(self.handle(), "DIALOGTYPE");
+            let val = get_str_attribute_slice(self.handle(), "DIALOGTYPE\0");
             FileDialogType::from_str(&*val)
         }
     }
 
     pub fn set_dialog_type(&self, ty: FileDialogType) {
-        set_str_attribute(self.handle(), "DIALOGTYPE", ty.to_str());
+        set_str_attribute(self.handle(), "DIALOGTYPE\0", ty.to_str());
     }
 
     pub fn directory(&self) -> String {
-        get_str_attribute(self.handle(), "DIRECTORY")
+        get_str_attribute(self.handle(), "DIRECTORY\0")
     }
 
     pub fn set_directory(&self, s: &str) {
-        set_str_attribute(self.handle(), "DIRECTORY", s);
+        set_str_attribute(self.handle(), "DIRECTORY\0", s);
     }
 
     pub fn ext_filter(&self) -> Vec<FileExtFilter> {
         unsafe {
-            let val = get_str_attribute_slice(self.handle(), "EXTFILTER");
+            let val = get_str_attribute_slice(self.handle(), "EXTFILTER\0");
             let mut filters = vec![];
             let mut parts = val.split('|');
             loop {

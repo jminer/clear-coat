@@ -119,7 +119,7 @@ impl TitleAttribute for Item {}
 callback_token!(ItemActionCallbackToken);
 thread_local!(
     static ITEM_ACTION_CALLBACKS: CallbackRegistry<FnMut(), ItemActionCallbackToken> =
-        CallbackRegistry::new("ACTION", item_action_cb)
+        CallbackRegistry::new("ACTION\0", item_action_cb)
 );
 extern fn item_action_cb(ih: *mut Ihandle) -> c_int {
     simple_callback(ih, &ITEM_ACTION_CALLBACKS)

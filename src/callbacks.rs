@@ -399,14 +399,14 @@ pub trait MenuCommonCallbacks : Control {
 
 impl_callbacks! {
     trait GetKillFocusCallbacks {
-        "GETFOCUS_CB" => get_focus_event {
+        "GETFOCUS_CB\0" => get_focus_event {
             GET_FOCUS_CALLBACKS<FnMut(), GetFocusCallbackToken>
         }
         unsafe extern fn get_focus_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &GET_FOCUS_CALLBACKS)
         }
 
-        "KILLFOCUS_CB" => kill_focus_event {
+        "KILLFOCUS_CB\0" => kill_focus_event {
             KILL_FOCUS_CALLBACKS<FnMut(), KillFocusCallbackToken>
         }
         unsafe extern fn kill_focus_cb(ih: *mut Ihandle) -> c_int {
@@ -417,14 +417,14 @@ impl_callbacks! {
 
 impl_callbacks! {
     trait EnterLeaveWindowCallbacks {
-        "ENTERWINDOW_CB" => enter_window_event {
+        "ENTERWINDOW_CB\0" => enter_window_event {
             ENTER_WINDOW_CALLBACKS<FnMut(), EnterWindowCallbackToken>
         }
         unsafe extern fn enter_window_cb(ih: *mut Ihandle) -> c_int {
             simple_callback(ih, &ENTER_WINDOW_CALLBACKS)
         }
 
-        "LEAVEWINDOW_CB" => leave_window_event {
+        "LEAVEWINDOW_CB\0" => leave_window_event {
             LEAVE_WINDOW_CALLBACKS<FnMut(), LeaveWindowCallbackToken>
         }
         unsafe extern fn leave_window_cb(ih: *mut Ihandle) -> c_int {
@@ -450,7 +450,7 @@ pub struct ButtonArgs {
 
 impl_callbacks! {
     trait ButtonCallback {
-        "BUTTON_CB" => button_event {
+        "BUTTON_CB\0" => button_event {
             BUTTON_CALLBACKS<FnMut(&ButtonArgs) -> CallbackAction, ButtonCallbackToken>
         }
         unsafe extern fn button_cb(ih: *mut Ihandle,

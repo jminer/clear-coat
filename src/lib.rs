@@ -203,8 +203,8 @@ fn iup_open() {
         if IupOpen(ptr::null_mut(), ptr::null_mut()) == IUP_OPENED {
             return;
         }
-        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE", "YES");
-        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE_FILE", "YES");
+        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE\0", "YES\0");
+        attributes::set_str_attribute(ptr::null_mut(), "UTF8MODE_FILE\0", "YES\0");
     }
 }
 
@@ -419,9 +419,9 @@ impl VAlignment {
 
     fn to_str(self) -> &'static str {
         match self {
-            VAlignment::Top => "ATOP",
-            VAlignment::Center => "ACENTER",
-            VAlignment::Bottom => "ABOTTOM",
+            VAlignment::Top => "ATOP\0",
+            VAlignment::Center => "ACENTER\0",
+            VAlignment::Bottom => "ABOTTOM\0",
         }
     }
 }
@@ -446,9 +446,9 @@ impl HAlignment {
 
     fn to_str(self) -> &'static str {
         match self {
-            HAlignment::Left => "ALEFT",
-            HAlignment::Center => "ACENTER",
-            HAlignment::Right => "ARIGHT",
+            HAlignment::Left => "ALEFT\0",
+            HAlignment::Center => "ACENTER\0",
+            HAlignment::Right => "ARIGHT\0",
         }
     }
 }
@@ -471,8 +471,8 @@ impl Orientation {
 
     fn to_str(self) -> &'static str {
         match self {
-            Orientation::Horizontal => "HORIZONTAL",
-            Orientation::Vertical => "VERTICAL",
+            Orientation::Horizontal => "HORIZONTAL\0",
+            Orientation::Vertical => "VERTICAL\0",
         }
     }
 }
