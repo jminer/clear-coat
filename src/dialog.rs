@@ -175,6 +175,7 @@ impl Popup for Dialog {}
 
 impl ActiveAttribute for Dialog {}
 impl CursorAttribute for Dialog {}
+impl ExpandAttribute for Dialog {}
 impl MinMaxSizeAttribute for Dialog {}
 impl TipAttribute for Dialog {}
 impl TitleAttribute for Dialog {}

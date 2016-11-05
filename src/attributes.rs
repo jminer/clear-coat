@@ -414,6 +414,56 @@ pub trait CursorAttribute : Control {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum Expand {
+    Yes,
+    Horizontal,
+    Vertical,
+    HorizontalFree,
+    VerticalFree,
+    No,
+}
+
+impl Expand {
+    fn from_str(s: &str) -> Self {
+        match s {
+            "YES" => Expand::Yes,
+            "HORIZONTAL" => Expand::Horizontal,
+            "VERTICAL" => Expand::Vertical,
+            "HORIZONTALFREE" => Expand::HorizontalFree,
+            "VERTICALFREE" => Expand::VerticalFree,
+            "NO" => Expand::No,
+            _ => panic!("unknown Expand"),
+        }
+    }
+
+    fn to_str(self) -> Cow<'static, str> {
+        match self {
+            Expand::Yes => "YES\0".into(),
+            Expand::Horizontal => "HORIZONTAL\0".into(),
+            Expand::Vertical => "VERTICAL\0".into(),
+            Expand::HorizontalFree => "HORIZONTALFREE\0".into(),
+            Expand::VerticalFree => "VERTICALFREE\0".into(),
+            Expand::No => "NO\0".into(),
+        }
+    }
+}
+
+pub trait ExpandAttribute : Control {
+    fn expand(&self) -> Expand {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "EXPAND\0");
+            Expand::from_str(&s)
+        }
+    }
+
+    fn set_expand(&self, expand: Expand) -> &Self {
+        let s = expand.to_str();
+        set_str_attribute(self.handle(), "EXPAND\0", &s);
+        self
+    }
+}
+
 pub trait MinMaxSizeAttribute : Control {
     fn min_size(&self) -> (i32, i32) {
         get_int_int_attribute(self.handle(), "MINSIZE")

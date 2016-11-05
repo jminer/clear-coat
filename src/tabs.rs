@@ -94,6 +94,7 @@ impl Container for Tabs {}
 impl NonDialogContainer for Tabs {}
 
 impl ActiveAttribute for Tabs {}
+impl ExpandAttribute for Tabs {}
 impl MinMaxSizeAttribute for Tabs {}
 impl TipAttribute for Tabs {}
 impl VisibleAttribute for Tabs {}

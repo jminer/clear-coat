@@ -49,6 +49,7 @@ impl Label {
 impl_control_traits!(Label);
 
 impl ActiveAttribute for Label {}
+impl ExpandAttribute for Label {}
 impl MinMaxSizeAttribute for Label {}
 impl TipAttribute for Label {}
 impl TitleAttribute for Label {}

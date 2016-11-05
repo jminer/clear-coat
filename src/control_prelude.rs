@@ -30,6 +30,7 @@ pub use super::attributes::{
     CanFocusAttribute,
     CanvasAttributes,
     CursorAttribute,
+    ExpandAttribute,
     MinMaxSizeAttribute,
     OrientationAttribute,
     ScrollbarAttribute,

@@ -97,6 +97,7 @@ impl_control_traits!(Text);
 
 impl ActiveAttribute for Text {}
 impl CanFocusAttribute for Text {}
+impl ExpandAttribute for Text {}
 impl MinMaxSizeAttribute for Text {}
 impl ScrollbarAttribute for Text {}
 impl TipAttribute for Text {}

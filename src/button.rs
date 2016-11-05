@@ -47,6 +47,7 @@ impl_control_traits!(Button);
 
 impl ActiveAttribute for Button {}
 impl CanFocusAttribute for Button {}
+impl ExpandAttribute for Button {}
 impl MinMaxSizeAttribute for Button {}
 impl TipAttribute for Button {}
 impl TitleAttribute for Button {}

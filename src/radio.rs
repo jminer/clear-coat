@@ -37,6 +37,7 @@ impl_control_traits!(Radio);
 impl Container for Radio {}
 impl NonDialogContainer for Radio {}
 
+impl ExpandAttribute for Radio {}
 impl MinMaxSizeAttribute for Radio {}
 impl VisibleAttribute for Radio {}
 

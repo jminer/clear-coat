@@ -92,6 +92,8 @@ pub mod common_attrs_cbs {
         CanFocusAttribute,
         Cursor,
         CursorAttribute,
+        Expand,
+        ExpandAttribute,
         MinMaxSizeAttribute,
         OrientationAttribute,
         ScrollbarAttribute,

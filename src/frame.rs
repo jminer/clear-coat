@@ -42,6 +42,7 @@ impl Container for Frame {}
 impl NonDialogContainer for Frame {}
 
 impl ActiveAttribute for Frame {}
+impl ExpandAttribute for Frame {}
 impl MinMaxSizeAttribute for Frame {}
 impl TitleAttribute for Frame {}
 impl VisibleAttribute for Frame {}

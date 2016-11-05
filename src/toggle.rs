@@ -82,6 +82,7 @@ impl_control_traits!(Toggle);
 
 impl ActiveAttribute for Toggle {}
 impl CanFocusAttribute for Toggle {}
+impl ExpandAttribute for Toggle {}
 impl MinMaxSizeAttribute for Toggle {}
 impl TipAttribute for Toggle {}
 impl TitleAttribute for Toggle {}

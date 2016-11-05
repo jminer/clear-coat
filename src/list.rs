@@ -160,6 +160,7 @@ impl List {
 impl_control_traits!(List);
 
 impl ActiveAttribute for List {}
+impl ExpandAttribute for List {}
 impl MinMaxSizeAttribute for List {}
 impl VisibleAttribute for List {}
 
