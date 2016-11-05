@@ -100,6 +100,7 @@ pub mod common_attrs_cbs {
         TipAttribute,
         TitleAttribute,
         VisibleAttribute,
+        VisibleColumnsLinesAttribute,
     };
     pub use callbacks::{
         MenuCommonCallbacks,

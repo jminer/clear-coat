@@ -163,6 +163,7 @@ impl ActiveAttribute for List {}
 impl ExpandAttribute for List {}
 impl MinMaxSizeAttribute for List {}
 impl VisibleAttribute for List {}
+impl VisibleColumnsLinesAttribute for List {}
 
 impl MenuCommonCallbacks for List {}
 

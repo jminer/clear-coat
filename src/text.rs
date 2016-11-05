@@ -102,6 +102,7 @@ impl MinMaxSizeAttribute for Text {}
 impl ScrollbarAttribute for Text {}
 impl TipAttribute for Text {}
 impl VisibleAttribute for Text {}
+impl VisibleColumnsLinesAttribute for Text {}
 
 impl MenuCommonCallbacks for Text {}
 impl GetKillFocusCallbacks for Text {}

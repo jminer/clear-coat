@@ -593,3 +593,29 @@ pub trait VisibleAttribute : Control {
         if visible { self.show() } else { self.hide() }
     }
 }
+
+pub trait VisibleColumnsLinesAttribute : Control {
+    fn visible_columns(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "VISIBLECOLUMNS\0");
+            s.parse().expect("could not convert VISIBLECOLUMNS to an integer")
+        }
+    }
+
+    fn set_visible_columns(&self, cols: u32) -> &Self {
+        set_str_attribute(self.handle(), "VISIBLECOLUMNS\0", &format!("{}\0", cols));
+        self
+    }
+
+    fn visible_lines(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "VISIBLELINES\0");
+            s.parse().expect("could not convert VISIBLELINES to an integer")
+        }
+    }
+
+    fn set_visible_lines(&self, lines: u32) -> &Self {
+        set_str_attribute(self.handle(), "VISIBLELINES\0", &format!("{}\0", lines));
+        self
+    }
+}

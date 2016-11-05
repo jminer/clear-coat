@@ -37,6 +37,7 @@ pub use super::attributes::{
     TipAttribute,
     TitleAttribute,
     VisibleAttribute,
+    VisibleColumnsLinesAttribute,
 };
 pub use super::callbacks::{
     CallbackAction,
