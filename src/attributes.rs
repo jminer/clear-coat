@@ -8,7 +8,7 @@
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::CStr;
-use libc::{c_char, c_int, c_void};
+use libc::{c_char, c_int};
 use iup_sys::*;
 use smallvec::SmallVec;
 use winapi;
@@ -330,7 +330,7 @@ pub enum Cursor {
 }
 
 impl Cursor {
-    fn from_str(s: &str) -> Cursor {
+    fn from_str(s: &str) -> Self {
         match s {
             "NONE" => Cursor::None,
             "ARROW" => Cursor::Arrow,
@@ -455,7 +455,7 @@ pub enum Scrollbar {
 }
 
 impl Scrollbar {
-    fn from_str(s: &str) -> Scrollbar {
+    fn from_str(s: &str) -> Self {
         match s {
             "VERTICAL" => Scrollbar::Vertical,
             "HORIZONTAL" => Scrollbar::Horizontal,

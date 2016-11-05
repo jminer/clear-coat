@@ -125,7 +125,7 @@ pub enum ShowState {
 }
 
 impl ShowState {
-    fn from_int(state: c_int) -> ShowState {
+    fn from_int(state: c_int) -> Self {
         match state {
             IUP_HIDE => ShowState::Hide,
             IUP_SHOW => ShowState::Show,

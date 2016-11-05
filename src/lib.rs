@@ -405,7 +405,7 @@ pub enum VAlignment {
 }
 
 impl VAlignment {
-    fn from_str(s: &[u8]) -> VAlignment {
+    fn from_str(s: &[u8]) -> Self {
         match s {
             b"ATOP" => VAlignment::Top,
             b"ACENTER" => VAlignment::Center,
@@ -432,7 +432,7 @@ pub enum HAlignment {
 }
 
 impl HAlignment {
-    fn from_str(s: &[u8]) -> HAlignment {
+    fn from_str(s: &[u8]) -> Self {
         match s {
             b"ALEFT" => HAlignment::Left,
             b"ACENTER" => HAlignment::Center,
@@ -458,7 +458,7 @@ pub enum Orientation {
 }
 
 impl Orientation {
-    fn from_str(s: &[u8]) -> Orientation {
+    fn from_str(s: &[u8]) -> Self {
         match s {
             b"HORIZONTAL" => Orientation::Horizontal,
             b"VERTICAL" => Orientation::Vertical,

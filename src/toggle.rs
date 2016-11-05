@@ -15,7 +15,7 @@ pub enum ToggleState {
 }
 
 impl ToggleState {
-    fn from_str(s: &[u8]) -> ToggleState {
+    fn from_str(s: &[u8]) -> Self {
         match s {
             b"ON" => ToggleState::On,
             b"OFF" => ToggleState::Off,
