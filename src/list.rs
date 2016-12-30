@@ -72,7 +72,9 @@ impl List {
             self.set_item(index, item.as_ref());
             index += 1;
         }
-        reset_attribute(self.handle(), &format!("{}\0", index + 1));
+        unsafe {
+            set_attribute_ptr(self.handle(), &format!("{}\0", index + 1), ptr::null_mut());
+        }
         self
     }
 
