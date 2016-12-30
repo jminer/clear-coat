@@ -131,6 +131,7 @@ impl List {
         assert!(!self.multiple());
 
         if let Some(index) = index {
+            assert!(index < self.count());
             set_str_attribute(self.handle(), "VALUE\0", &format!("{}\0", index + 1));
         } else {
             unsafe {
