@@ -90,6 +90,7 @@ pub use callbacks::{CallbackAction, Event, ButtonArgs, CanvasActionArgs};
 // above types if you want.
 pub mod common_attrs_cbs {
     pub use attributes::{
+        Orientations,
         ActiveAttribute,
         CanFocusAttribute,
         Cursor,
@@ -98,6 +99,8 @@ pub mod common_attrs_cbs {
         ExpandAttribute,
         MinMaxSizeAttribute,
         OrientationAttribute,
+        SizeAttribute,
+        SingleSizeAttribute,
         ScrollbarAttribute,
         TipAttribute,
         TitleAttribute,

@@ -6,6 +6,7 @@
  */
 
 use super::control_prelude::*;
+use super::attributes::*;
 
 pub trait Container : Control {
     /// Warning: Since children are stored as a linked list, appending a control is O(n) where
@@ -52,6 +53,77 @@ pub trait NonDialogContainer : Container {
     }
 }
 
+pub trait HVBox : Control {
+    fn expand_children(&self) -> bool {
+        unsafe {
+            get_str_attribute_slice(self.handle(), "EXPANDCHILDREN\0") == "YES"
+        }
+    }
+
+    fn set_expand_children(&self, expand: bool) -> &Self {
+        set_str_attribute(self.handle(), "EXPANDCHILDREN\0", if expand { "YES\0" } else { "NO\0" });
+        self
+    }
+
+    fn gap(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "GAP\0");
+            s.parse().expect("could not convert GAP to an integer")
+        }
+    }
+
+    fn set_gap(&self, gap: u32) -> &Self {
+        set_str_attribute(self.handle(), "GAP\0", &format!("{}\0", gap));
+        self
+    }
+
+    fn ngap(&self) -> u32 {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "NGAP\0");
+            s.parse().expect("could not convert NGAP to an integer")
+        }
+    }
+
+    fn set_ngap(&self, ngap: u32) -> &Self {
+        set_str_attribute(self.handle(), "NGAP\0", &format!("{}\0", ngap));
+        self
+    }
+
+    fn margin(&self) -> (u32, u32) {
+        let (x, y) = get_int_int_attribute(self.handle(), "MARGIN\0");
+        (x as u32, y as u32)
+    }
+
+    fn set_margin(&self, width: u32, height: u32) -> &Self {
+        let s = format!("{}x{}\0", width, height);
+        set_str_attribute(self.handle(), "MARGIN\0", &s);
+        self
+    }
+
+    fn nmargin(&self) -> (u32, u32) {
+        let (x, y) = get_int_int_attribute(self.handle(), "NMARGIN\0");
+        (x as u32, y as u32)
+    }
+
+    fn set_nmargin(&self, width: u32, height: u32) -> &Self {
+        let s = format!("{}x{}\0", width, height);
+        set_str_attribute(self.handle(), "NMARGIN\0", &s);
+        self
+    }
+
+    fn normalize_size(&self) -> Orientations {
+        unsafe {
+            let s = get_str_attribute_slice(self.handle(), "NORMALIZESIZE\0");
+            Orientations::from_str(&s)
+        }
+    }
+
+    fn set_normalize_size(&self, orientations: Orientations) -> &Self {
+        set_str_attribute(self.handle(), "NORMALIZESIZE\0", orientations.to_str());
+        self
+    }
+}
+
 const DEFAULT_GAP: &'static str = "6\0";
 
 fn set_top_level_margin_and_gap(ih: *mut Ihandle) {
@@ -82,6 +154,10 @@ impl Fill {
 }
 
 impl_control_traits!(Fill);
+
+// SizeAttribute instead of SingleSizeAttribute because it can be in a GridBox, where both the
+// width and height can be set.
+impl SizeAttribute for Fill {}
 
 #[macro_export]
 macro_rules! fill { // This is a macro for consistency, even though it could just be a function.
@@ -124,8 +200,10 @@ impl_control_traits!(Hbox);
 
 impl Container for Hbox {}
 impl NonDialogContainer for Hbox {}
+impl HVBox for Hbox {}
 
 impl ExpandAttribute for Hbox {}
+impl SingleSizeAttribute for Hbox {}
 
 #[macro_export]
 macro_rules! hbox {
@@ -182,8 +260,10 @@ impl_control_traits!(Vbox);
 
 impl Container for Vbox {}
 impl NonDialogContainer for Vbox {}
+impl HVBox for Vbox {}
 
 impl ExpandAttribute for Vbox {}
+impl SingleSizeAttribute for Vbox {}
 
 #[macro_export]
 macro_rules! vbox {

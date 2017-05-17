@@ -137,6 +137,35 @@ fn get_unique_attribute_name() -> String {
 }
 
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Orientations {
+    Vertical,
+    Horizontal,
+    Both,
+    None,
+}
+
+impl Orientations {
+    pub(crate) fn from_str(s: &str) -> Self {
+        match s {
+            "VERTICAL" => Orientations::Vertical,
+            "HORIZONTAL" => Orientations::Horizontal,
+            "BOTH" => Orientations::Both,
+            "NO" => Orientations::None,
+            _ => panic!("unknown Orientations"),
+        }
+    }
+
+    pub(crate) fn to_str(self) -> &'static str {
+        match self {
+            Orientations::Vertical => "VERTICAL\0",
+            Orientations::Horizontal => "HORIZONTAL\0",
+            Orientations::Both => "BOTH\0",
+            Orientations::None => "NO\0",
+        }
+    }
+}
+
 pub trait ActiveAttribute : Control {
     fn active(&self) -> bool {
         get_str_attribute(self.handle(), "ACTIVE\0") == "YES"
@@ -500,44 +529,62 @@ pub trait OrientationAttribute : Control {
     }
 }
 
-pub enum Scrollbar {
-    Vertical,
-    Horizontal,
-    Both,
-    None,
-}
-
-impl Scrollbar {
-    fn from_str(s: &str) -> Self {
+impl Orientations {
+    fn from_scrollbar_str(s: &str) -> Self {
         match s {
-            "VERTICAL" => Scrollbar::Vertical,
-            "HORIZONTAL" => Scrollbar::Horizontal,
-            "YES" => Scrollbar::Both,
-            "NO" => Scrollbar::None,
-            _ => panic!("unknown Scrollbar"),
+            "VERTICAL" => Orientations::Vertical,
+            "HORIZONTAL" => Orientations::Horizontal,
+            "YES" => Orientations::Both,
+            "NO" => Orientations::None,
+            _ => panic!("unknown scrollbar Orientations"),
         }
     }
 
-    fn to_str(self) -> &'static str {
+    fn to_scrollbar_str(self) -> &'static str {
         match self {
-            Scrollbar::Vertical => "VERTICAL\0",
-            Scrollbar::Horizontal => "HORIZONTAL\0",
-            Scrollbar::Both => "YES\0",
-            Scrollbar::None => "NO\0",
+            Orientations::Vertical => "VERTICAL\0",
+            Orientations::Horizontal => "HORIZONTAL\0",
+            Orientations::Both => "YES\0",
+            Orientations::None => "NO\0",
         }
     }
 }
 
 pub trait ScrollbarAttribute : Control {
-    fn scrollbar(&self) -> Scrollbar {
+    fn scrollbar(&self) -> Orientations {
         unsafe {
             let s = get_str_attribute_slice(self.handle(), "SCROLLBAR\0");
-            Scrollbar::from_str(&s)
+            Orientations::from_scrollbar_str(&s)
         }
     }
 
-    fn set_scrollbar(&self, scrollbar: Scrollbar) -> &Self {
-        set_str_attribute(self.handle(), "SCROLLBAR\0", scrollbar.to_str());
+    fn set_scrollbar(&self, orientations: Orientations) -> &Self {
+        set_str_attribute(self.handle(), "SCROLLBAR\0", orientations.to_scrollbar_str());
+        self
+    }
+}
+
+pub trait SizeAttribute : Control {
+    fn raster_size(&self) -> (u32, u32) {
+        let (w, h) = get_int_int_attribute(self.handle(), "RASTERSIZE\0");
+        (w as u32, h as u32)
+    }
+
+    fn set_raster_size(&self, width: u32, height: u32) -> &Self {
+        let s = format!("{}x{}\0", width, height);
+        set_str_attribute(self.handle(), "RASTERSIZE\0", &s);
+        self
+    }
+}
+
+pub trait SingleSizeAttribute : Control {
+    fn raster_size(&self) -> (u32, u32) {
+        let (w, h) = get_int_int_attribute(self.handle(), "RASTERSIZE\0");
+        (w as u32, h as u32)
+    }
+
+    fn set_raster_size(&self, size: u32) -> &Self {
+        set_str_attribute(self.handle(), "RASTERSIZE\0", &format!("{}\0", size));
         self
     }
 }
