@@ -263,6 +263,41 @@ fn create_list_page() -> Box<Control> {
     Box::new(wrapper)
 }
 
+fn create_timer_page() -> Box<Control> {
+    let label = Label::new();
+    let start_button = Button::with_title("Start");
+    let stop_button = Button::with_title("Stop");
+
+    let timer = Timer::new();
+
+    let page = vbox!(
+       &label,
+       hbox!(&start_button, &stop_button),
+    );
+
+    let page_capt = page.clone();
+    let label_capt = label.clone();
+    let mut counter = 1;
+    timer.action_event().add(move || {
+        label_capt.set_title(&counter.to_string());
+        page_capt.refresh_children();
+        counter += 1;
+    });
+    timer.set_time(1000);
+    timer.set_running(true);
+
+    let timer_capt = timer.clone();
+    start_button.action_event().add(move || {
+        timer_capt.set_running(true);
+    });
+    let timer_capt = timer.clone();
+    stop_button.action_event().add(move || {
+        timer_capt.set_running(false);
+    });
+
+    Box::new(page)
+}
+
 fn main() {
 
     let dialog = Dialog::new();
@@ -273,6 +308,7 @@ fn main() {
         TabInfo::new(&*create_cursors_page()).title("Cursors"),
         TabInfo::new(&*create_file_dialog_page()).title("File Dialog"),
         TabInfo::new(&*create_list_page()).title("List"),
+        TabInfo::new(&*create_timer_page()).title("Timer"),
     ]);
 
     dialog.append(&tabs).expect("failed to build the window");
