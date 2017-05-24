@@ -23,13 +23,13 @@
 | Fill                    |       |       |   •   |           |
 | Frame                   |       |   •   |       |           |
 | GridBox                 |       |   •   |       |           |
-| HBox                    |       |   •   |       |           |
+| HBox                    |       |       |   •   |           |
 | Normalizer              |   •   |       |       |           |
 | Radio                   |       |   •   |       |           |
 | ScrollBox               |   •   |       |       |           |
 | Split                   |   •   |       |       |           |
 | Tabs                    |       |   •   |       |           |
-| VBox                    |       |   •   |       |           |
+| VBox                    |       |       |   •   |           |
 | ZBox                    |   •   |       |       |           |
 | **Standard**            |
 | Button                  |       |   •   |       |           |
@@ -52,7 +52,7 @@
 | **Other**               |
 | Image                   |   •   |       |       |           |
 | Clipboard               |   •   |       |       |           |
-| Timer                   |   •   |       |       |           |
+| Timer                   |       |       |       |     •     |
 | Global attributes       |   •   |       |       |           |
 | **Controls library**    |
 | GLCanvas                |   •   |       |       |           |
