@@ -72,7 +72,7 @@ pub fn remove_ldestroy_callback(token: Token) {
 
 extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
     handle_rc_destroy_cb(ih);
-    LDESTROY_CALLBACKS.with(|cell| {
+    let _ = LDESTROY_CALLBACKS.try_with(|cell| {
         // Putting this line in the if condition will currently cause the HashMap borrow to last
         // for the entire if body.
         let cbs_opt = cell.borrow_mut().remove(&ih);
@@ -81,8 +81,8 @@ extern fn ldestroy_cb(ih: *mut Ihandle) -> c_int {
                 cb.1(ih);
             }
         }
-        IUP_DEFAULT
-    })
+    });
+    IUP_DEFAULT
 }
 
 thread_local!(
@@ -90,7 +90,7 @@ thread_local!(
 );
 
 pub fn handle_rc_destroy_cb(ih: *mut Ihandle) {
-    EXISTING_HANDLES.with(|cell| {
+    let _ = EXISTING_HANDLES.try_with(|cell| {
         let mut map = cell.borrow_mut();
         if let Some(weak) = map.remove(&ih) {
             // It should be removed when the last strong ref was dropped, so it should always be upgradable.
@@ -142,7 +142,7 @@ impl Drop for HandleBox {
         if self.get() == ptr::null_mut() {
             return;
         }
-        EXISTING_HANDLES.with(|map| {
+        let _ = EXISTING_HANDLES.try_with(|map| {
             map.borrow_mut().remove(&self.get()).expect("handle not found in map");
         });
         unsafe {
